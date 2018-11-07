@@ -8,18 +8,52 @@
 
 namespace backend\tests\unit\tags;
 
+use common\services\TagsService;
 use Codeception\Test\Unit;
-use blog\entities\Tags;
 
+/**
+ * Class CreateTest
+ *
+ * @property \common\services\TagsService $service
+ * @package backend\tests\unit\tags
+ */
 class CreateTest extends Unit
 {
+    public
+        $tags,
+        $service;
+
+    public function setUp()
+    {
+        $this->tags = ['первый','конь','баян'];
+        $this->service = new TagsService();
+        return parent::setUp();
+    }
 
     public function testSuccess(){
 
-        $tag = new Tags();
+        $tag = $this->service->create('ложка', 'spoon');
+        expect($tag)->isInstanceOf('backend\models\Tags');
+        expect($tag->frequency)->equals(1);
+        expect($tag->is_active)->equals(1);
+
+        $tag = $this->service->create('spoon', 'spoon');
+        expect($tag)->isInstanceOf('backend\models\Tags');
+        expect($tag->name)->equals('spoon');
     }
 
-    public function frequencyUpTest(){
+    public function testBatchSuccess(){
 
+        expect($this->service->batchCreate($this->tags))->equals(count($this->tags));
+
+        expect($tag = $this->service->getByName('конь'))->notNull();
+        expect($tag->frequency)->equals(1);
+        expect($tag->is_active)->equals(1);
+    }
+
+    public function testBatchCreateFromString(){
+
+        $tags = $this->service->arrayFromString('первый,дерево');
+        expect($this->service->batchCreate($tags))->equals(count($tags));
     }
 }
