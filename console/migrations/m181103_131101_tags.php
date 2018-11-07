@@ -17,9 +17,9 @@ class m181103_131101_tags extends Migration
         $this->createTable('{{%tags}}', [
             'id' => $this->primaryKey()->unsigned(),
             'name' => $this->string(50)->notNull()->unique(),
-            'slug' => $this->string(50)->notNull(),
+            'slug' => $this->string(50)->notNull()->unique(),
             'frequency' => $this->smallInteger()->unsigned()->defaultValue(1),
-            'is_active' => $this->smallInteger(1)->unsigned()->defaultValue(1),
+            'is_active' => $this->smallInteger(1)->defaultValue(1),
         ], $tableOptions);
     }
     /**
