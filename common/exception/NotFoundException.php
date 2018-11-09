@@ -6,7 +6,7 @@
  * Time: 16:50
  */
 
-namespace blog\repositories;
+namespace common\exception;
 
 
 class NotFoundException extends \DomainException

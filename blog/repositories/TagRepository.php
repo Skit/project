@@ -8,8 +8,7 @@
 
 namespace blog\repositories;
 
-use blog\entities\Tags;
-use blog\repositories\NotFoundException;
+use backend\models\Tags;
 
 class TagRepository
 {
