@@ -1,7 +1,7 @@
 <?php
 namespace backend\controllers;
 
-use common\services\TagsService;
+use common\services\models\TagsService;
 use Yii;
 use yii\base\Module;
 use yii\web\Controller;
