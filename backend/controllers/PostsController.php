@@ -2,7 +2,8 @@
 
 namespace backend\controllers;
 
-use common\services\PostsService;
+use common\services\forms;
+use common\services\models;
 use Yii;
 use backend\forms\PostsForm;
 use backend\forms\PostsSearch;
@@ -18,10 +19,17 @@ use yii\filters\VerbFilter;
 class PostsController extends Controller
 {
     protected $service;
+    protected $categoriesFormsService;
 
-    public function __construct(string $id, Module $module, PostsService $service, array $config = [])
+    public function __construct
+    (
+        string $id, Module $module,
+        models\PostsService $service, forms\CategoriesService $categoriesFormsService,
+        array $config = []
+    )
     {
         $this->service = $service;
+        $this->categoriesFormsService = $categoriesFormsService;
         parent::__construct($id, $module, $config);
     }
 
@@ -84,6 +92,7 @@ class PostsController extends Controller
 
         return $this->render('create', [
             'model' => $form,
+            'categories' => $this->categoriesFormsService
         ]);
     }
 

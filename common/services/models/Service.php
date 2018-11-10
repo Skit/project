@@ -6,7 +6,7 @@
  * Time: 22:25
  */
 
-namespace common\services;
+namespace common\services\models;
 
 use yii\base\Model;
 use yii\db\ActiveRecord;
@@ -20,13 +20,13 @@ class Service
         $this->model = $model;
     }
 
-    public function create(Model $post, int $validate=1): Model
+    public function create(Model $form, int $validate=1): Model
     {
         if($validate){
-            $post->validate();
+            $form->validate();
         }
 
-        $this->model->setAttributes($post->getAttributes(), false);
+        $this->model->setAttributes($form->getAttributes(), false);
         $this->model->save();
 
         return $this->model;

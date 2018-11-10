@@ -6,7 +6,7 @@
  * Time: 21:51
  */
 
-namespace common\services;
+namespace common\services\models;
 
 use backend\models\Categories;
 

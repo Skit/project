@@ -24,10 +24,6 @@ use yii\db\Expression;
  */
 class Categories extends \yii\db\ActiveRecord
 {
-    const
-        ACTIVE = 1,
-        INACTIVE = 0;
-
     public function beforeSave($insert)
     {
         $this->created_at = date('YmdHis');

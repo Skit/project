@@ -6,7 +6,7 @@
  * Time: 16:53
  */
 
-namespace common\services;
+namespace common\services\models;
 
 use backend\models\Tags;
 use backend\forms\TagsForm;

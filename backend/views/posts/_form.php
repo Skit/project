@@ -6,14 +6,16 @@ use backend\modules\translator\widgets\InputTranslate\InputTranslate;
 
 /* @var $this yii\web\View */
 /* @var $model backend\models\Posts */
+/* @var $categories \common\services\forms\CategoriesService */
 /* @var $form yii\widgets\ActiveForm */
+
 ?>
 
 <div class="posts-form">
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model, 'category_id')->textInput() ?>
+    <?= $form->field($model, 'category_id')->dropDownList($categories->dropDownList()) ?>
 
     <?= $form->field($model, 'title')->widget(InputTranslate::class, [
                 'options'=>['maxlength'=>true]]) ?>
@@ -28,7 +30,7 @@ use backend\modules\translator\widgets\InputTranslate\InputTranslate;
     <?= $form->field($model, 'meta_key')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'tags')->textInput(['maxlength' => true]) ?>
-    <?= $form->field($model, 'is_active')->textInput() ?>
+    <?= $form->field($model, 'is_active')->dropDownList($model->isActive()) ?>
 
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>

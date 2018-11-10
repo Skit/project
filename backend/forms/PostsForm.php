@@ -10,7 +10,7 @@ namespace backend\forms;
 
 
 use backend\models\Categories;
-use yii\base\Model;
+use common\models\Forms;
 use yii\db\Expression;
 
 /**
@@ -32,8 +32,10 @@ use yii\db\Expression;
  *
  * @property Categories $category
  */
-class PostsForm extends Model
+class PostsForm extends Forms
 {
+    public $model;
+
     public
         $title,
         $slug,
@@ -98,5 +100,4 @@ class PostsForm extends Model
 
         return parent::beforeValidate();
     }
-
 }

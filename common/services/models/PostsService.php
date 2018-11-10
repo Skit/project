@@ -6,7 +6,7 @@
  * Time: 21:51
  */
 
-namespace common\services;
+namespace common\services\models;
 
 use backend\forms\PostsForm;
 use backend\models\Posts;
@@ -17,7 +17,7 @@ class PostsService extends Service
 
     public function __construct(Posts $posts)
     {
-        $this->model = $posts;
+        parent::__construct($posts);
     }
 
 /*    public function create(PostsForm $post, int $validate=1): Posts
