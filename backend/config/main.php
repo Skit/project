@@ -15,6 +15,17 @@ return [
         'translator' => [
             'class' => 'backend\modules\translator\Module',
         ],
+        'resizer' => [
+            'class' => 'backend\modules\resizer\Module',
+            'params'=> [
+                'imageRule' => [
+                    'extensions' => 'jpg, gif, png'
+                ],
+                'templates' => [
+                    'PostsForm' => ['width'=>400, 'height'=>280]
+                ],
+            ]
+        ],
     ],
     'components' => [
         'request' => [

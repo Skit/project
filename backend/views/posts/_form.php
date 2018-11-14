@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use backend\modules\translator\widgets\InputTranslate\InputTranslate;
+use backend\modules\resizer\widgets\Cropper\Cropper;
 
 /* @var $this yii\web\View */
 /* @var $model backend\models\Posts */
@@ -21,7 +22,9 @@ use backend\modules\translator\widgets\InputTranslate\InputTranslate;
                 'options'=>['maxlength'=>true]]) ?>
 
     <?= $form->field($model, 'slug')->textInput(['maxlength' => true]) ?>
-    <?= $form->field($model, 'image_url')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'image_url')->widget(Cropper::class, [
+            'cropperButtonId' => 'saveButton',
+    ]) ?>
     <?= $form->field($model, 'video_url')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'content')->textarea(['rows' => 6]) ?>
@@ -33,7 +36,7 @@ use backend\modules\translator\widgets\InputTranslate\InputTranslate;
     <?= $form->field($model, 'is_active')->dropDownList($model->isActive()) ?>
 
     <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton('Save', ['class' => 'btn btn-success', 'id'=> 'saveButton']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

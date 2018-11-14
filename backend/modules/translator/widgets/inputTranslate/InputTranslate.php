@@ -50,7 +50,7 @@ class InputTranslate extends InputWidget
          * Field options
          * @var array
          */
-        $options,
+        $options = [],
         /**
          * Attribute name for translate output
          * @var string
