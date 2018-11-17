@@ -17,12 +17,12 @@ class replacerTest extends Unit
 
     public function testWithoutParams()
     {
-        $string = FileHelper::replacePattern('{:date}');
+        $string = FileHelper::replacer('{:date}');
         expect($string)->equals(date('Y/m'));
     }
 
     public function testCorrectSetVariable(){
-        $string = FileHelper::replacePattern('{:date}');
+        $string = FileHelper::replacer('{:date}');
         expect($string)->equals(date('Y/m'));
     }
 
@@ -30,13 +30,13 @@ class replacerTest extends Unit
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Undefined variable: {foo}, {bar}');
-        FileHelper::replacePattern('{:date}/{foo}/{bar}');
+        FileHelper::replacer('{:date}/{foo}/{bar}');
     }
 
     public function testUndefinedFunctionException()
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Undefined function: foo');
-        FileHelper::replacePattern('{:foo}');
+        FileHelper::replacer('{:foo}');
     }
 }
