@@ -10,13 +10,13 @@ namespace backend\tests\unit\tags;
 
 
 use Codeception\Test\Unit;
-use common\services\TagsService;
+use common\services\models\TagsService;
 use yii\base\DynamicModel;
 
 /**
  * Class NodeTest
  *
- * @property \common\services\TagsService $service
+ * @property \common\services\models\TagsService $service
  * @package backend\tests\unit\tags
  */
 

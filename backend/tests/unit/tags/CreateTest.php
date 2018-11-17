@@ -8,13 +8,13 @@
 
 namespace backend\tests\unit\tags;
 
-use common\services\TagsService;
+use common\services\models\TagsService;
 use Codeception\Test\Unit;
 
 /**
  * Class CreateTest
  *
- * @property \common\services\TagsService $service
+ * @property \common\services\models\TagsService $service
  * @package backend\tests\unit\tags
  */
 class CreateTest extends Unit

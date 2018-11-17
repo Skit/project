@@ -9,11 +9,11 @@
 namespace backend\tests\unit\tags;
 
 use Codeception\Test\Unit;
-use common\services\TagsService;
+use common\services\models\TagsService;
 
 /**
  * Class FrequencyTest
- * @property \common\services\TagsService $service
+ * @property \common\services\models\TagsService $service
  * @package backend\tests\unit\tags
  */
 class FrequencyTest extends Unit

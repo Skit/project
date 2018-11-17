@@ -10,7 +10,7 @@ namespace backend\tests\unit\tags;
 
 use backend\forms\TagsForm;
 use Codeception\Test\Unit;
-use common\services\TagsService;
+use common\services\models\TagsService;
 
 class FormTest extends Unit
 {
@@ -43,9 +43,5 @@ class FormTest extends Unit
             ->equals('Name must be a string.');
         expect($form->getFirstError('slug'))
             ->equals('Slug should contain at most 50 characters.');
-    }
-
-    public function testCreate(){
-
     }
 }

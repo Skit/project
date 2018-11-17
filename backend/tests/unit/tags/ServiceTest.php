@@ -10,14 +10,14 @@ namespace backend\tests\unit\tags;
 
 use Codeception\Test\Unit;
 use common\fixtures\TagsFixture;
-use common\services\TagsService;
+use common\services\models\TagsService;
 use yii\base\DynamicModel;
 use yii\helpers\Inflector;
 
 /**
  * Class ServiceTest
  *
- * @property \common\services\TagsService $service
+ * @property \common\services\models\TagsService $service
  * @package backend\tests\unit\tags
  */
 class ServiceTest extends Unit
