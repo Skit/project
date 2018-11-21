@@ -2,6 +2,7 @@
 
 namespace backend\models;
 
+use backend\modules\resizer\behaviors\SaveUnSaveBehavior;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 
@@ -39,13 +40,14 @@ class Posts extends \yii\db\ActiveRecord
         return '{{%posts}}';
     }
 
-/*    public function behaviors()
+    public function behaviors()
     {
         return [
-            // TODO сделать для imperavi bugfix
-            'class' => TimestampBehavior::class,
+            TimestampBehavior::class,
+            SaveUnSaveBehavior::class,
+
         ];
-    }*/
+    }
 
     /**
      * @param bool $insert
@@ -53,8 +55,7 @@ class Posts extends \yii\db\ActiveRecord
      */
     public function beforeSave($insert)
     {
-        // FIXME $this->creator_id;
-        // FIXME $this->is_highlight;
+        $this->creator_id = Yii::$app->user->identity->id;
         return parent::beforeSave($insert);
     }
 
@@ -63,7 +64,6 @@ class Posts extends \yii\db\ActiveRecord
      */
     public function afterFind()
     {
-        // FIXME $this->count_view;
         parent::afterFind();
     }
 

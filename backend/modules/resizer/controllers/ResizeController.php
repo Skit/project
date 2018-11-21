@@ -2,19 +2,30 @@
 
 namespace backend\modules\resizer\controllers;
 
+use Yii;
+use common\helpers\FileHelper;
+use backend\modules\resizer\services\Resizer;
+use yii\base\Module;
 use yii\web\Controller;
 use yii\web\HttpException;
-use yii\web\UploadedFile;
 
 /**
  * Default controller for the `translator` module
  */
 class ResizeController extends Controller
 {
+    public $service;
+
+    public function __construct(string $id, Module $module, Resizer $service, array $config = [])
+    {
+        $this->service = $service;
+        parent::__construct($id, $module, $config);
+    }
+
+    // Is deleted method
     public function actionIndex(){
 
-        var_dump($this->module->params); exit;
-        print 'rrr';
+        var_dump($this->module);
     }
     /**
      * Renders the index view for the module
@@ -22,24 +33,11 @@ class ResizeController extends Controller
      */
     public function actionCropper()
     {
-        $request = \Yii::$app->request;
-
-        if (!$request->isAjax || !($imageData = $request->post('imageData'))
-            || !($canvasData = $request->post('canvasData'))
-            || !($image = UploadedFile::getInstanceByName( 'image')))
-        {
-            throw new HttpException(400, 'Empty data.');
+        if (!$this->service->init()) {
+            // TODO можно возвращать ошибки или сделать метод как в validate()
+            throw new HttpException(400, 'Data invalid.');
         }
 
-        $model = new \yii\base\DynamicModel(compact('image'));
-        $model->addRule(['image'], 'image', $this->module->params['imageRule']);
-
-        if (!$model->validate()) {
-            throw new HttpException(400, $model->getFirstError('image'));
-        }
-
-        var_dump(UploadedFile::getInstance($model, 'image')); exit;
-
-        //return (new InputTranslate($str))->getEn();
+        return $this->service->cropper()->end();
     }
 }

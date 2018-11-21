@@ -17,14 +17,11 @@ return [
         ],
         'resizer' => [
             'class' => 'backend\modules\resizer\Module',
-            'params'=> [
-                'imageRule' => [
-                    'extensions' => 'jpg, gif, png'
-                ],
-                'templates' => [
-                    'PostsForm' => ['width'=>400, 'height'=>280]
-                ],
-            ]
+            'size' => ['width'=>400, 'height'=>280],
+            'clients' => [
+                'PostsForm',
+                'CategoriesForm',
+            ],
         ],
     ],
     'components' => [

@@ -70,6 +70,10 @@ class Cropper extends InputWidget
          */
         $fileInputId,
         /**
+         * @var string
+         */
+        $currentInputId,
+        /**
          * For file input
          * @var string
          */
@@ -102,10 +106,9 @@ class Cropper extends InputWidget
          */
         $canvasSize,
         /**
-         * Params of resizer module
-         * @var array
+         * @var string model->formName()
          */
-        $resizerParams;
+        $formName;
 
         /**
          * If equals with $cropperSendId displays cropper send button, else by ID
@@ -132,17 +135,20 @@ class Cropper extends InputWidget
             $this->field->parts['{label}'] = '';
         }
 
-        $this->resizerParams = Yii::$app->getModule('resizer')->params;
         $this->isCropperSendButton = !!($this->cropperButtonId === $this->cropperSendId);
 
         $this->options = array_merge($this->options, []);
         $this->cropperOptions = array_merge($this->defaultCropperOptions, $this->cropperOptions);
         $this->view = $this->getView();
         $this->fileInputId = Html::getInputId($this->model, $this->fileAttribute);
+        $this->currentInputId = Html::getInputId($this->model, $this->attribute);
 
-        $this->acceptExtensions = $this->resizerParams['imageRule']['extensions'];
+        $this->formName = $this->model->formName();
+        $moduleParams = Yii::$app->getModule('resizer')->clientSettings($this->formName);
+
+        $this->canvasSize = $moduleParams['size'];
+        $this->acceptExtensions = $moduleParams['allowExtensions'];
         $this->acceptExtensions = '.' . str_replace([',', ' '], [',.', ''], $this->acceptExtensions);
-        $this->canvasSize = $this->resizerParams['templates'][$this->model->formName()];
 
         parent::init();
     }
@@ -154,11 +160,13 @@ class Cropper extends InputWidget
     {
         assetWidget::register($this->view);
 
-        self::scriptCanvasSize();
-        self::scriptCropperInit();
-        self::scriptImageLoad();
-        self::scriptMethodButtons();
-        self::scriptSendCropperData();
+        $script = self::scriptCanvasSize();
+        $script .= self::scriptCropperInit();
+        $script .= self::scriptImageLoad();
+        $script .= self::scriptMethodButtons();
+        $script .= self::scriptSendCropperData();
+
+        $this->view->registerJs($script);
 
         return self::getFields();
     }
@@ -202,9 +210,9 @@ class Cropper extends InputWidget
     }
 
     /**
-     *
+     * @return string
      */
-    protected function scriptCropperInit(): void
+    protected function scriptCropperInit(): string
     {
         $script = "let \$image = $('#{$this->imageId}'), uploadedImageURL, 
         URL = window.URL || window.webkitURL,options = {";
@@ -216,23 +224,26 @@ class Cropper extends InputWidget
         $script = rtrim($script, ',');
         $script .= '};$image.cropper(options);';
 
-        $this->view->registerJs($script);
-    }
-
-    public function scriptCanvasSize(): void
-    {
-        $this->view->registerJs("$('.{$this->canvasClass}').css({
-            'width': '{$this->canvasSize['width']}',
-            'height': '{$this->canvasSize['height']}'
-        })");
+        return $script;
     }
 
     /**
-     *
+     * @return string
      */
-    protected function scriptImageLoad(): void
+    public function scriptCanvasSize(): string
     {
-        $this->view->registerJs("
+        return "$('.{$this->canvasClass}').css({
+            'width': '{$this->canvasSize['width']}',
+            'height': '{$this->canvasSize['height']}'
+        });";
+    }
+
+    /**
+     * @return string
+     */
+    protected function scriptImageLoad(): string
+    {
+        return "
             var \$inputImage = $('#{$this->fileInputId}');
             if (URL) {
                 \$inputImage.change(function () {
@@ -251,7 +262,7 @@ class Cropper extends InputWidget
                             uploadedImageType = file.type;
                             
                             if (uploadedImageURL) {
-                            URL.revokeObjectURL(uploadedImageURL);
+                                URL.revokeObjectURL(uploadedImageURL);
                             }
                             
                             uploadedImageURL = URL.createObjectURL(file);
@@ -264,15 +275,15 @@ class Cropper extends InputWidget
                 });
             } else {
                 \$inputImage.prop('disabled', true).parent().addClass('disabled');
-            }");
+            }";
     }
 
     /**
-     *
+     * @return string
      */
-    protected function scriptMethodButtons(): void
+    protected function scriptMethodButtons(): string
     {
-        $this->view->registerJs("
+        return "
             $('.{$this->cropperButtonsClass}').on('click', '[data-method]', function () {
                 let \$this = $(this),
                     data = \$this.data(),
@@ -327,13 +338,13 @@ class Cropper extends InputWidget
                     }
                   }
                 }
-        });");
+        });";
     }
 
     /**
-     *
+     * @return string
      */
-    protected function scriptSendCropperData(): void
+    protected function scriptSendCropperData(): string
     {
         $script = "$('#{$this->cropperButtonId}').bind('click', function(e){";
 
@@ -351,15 +362,17 @@ class Cropper extends InputWidget
                 const formData = new FormData();
                 formData.append('image', blob);
                 formData.append('canvasData', JSON.stringify(\$image.cropper('getCanvasData')));
-                formData.append('imageData', JSON.stringify(\$image.cropper('getImageData')));
-              
+                formData.append('fileName', JSON.stringify(uploadedImageName));
+                formData.append('client', '{$this->formName}');
+
                 $.ajax('{$this->url}', {
                     method: \"POST\",
                     processData: false,
                     contentType: false,
                     data: formData
                 }).done(function(data){
-                    console.log(data);
+                    $('#{$this->currentInputId}').val(data);
+                    \$this.submit();
                 }).fail(function(error, message){
                     alert(error.responseText);
                 }).always(function(){
@@ -369,7 +382,7 @@ class Cropper extends InputWidget
 	        });
         });";
 
-        $this->view->registerJs($script);
+        return $script;
     }
 
 }
