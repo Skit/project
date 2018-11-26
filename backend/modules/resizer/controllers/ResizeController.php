@@ -22,11 +22,6 @@ class ResizeController extends Controller
         parent::__construct($id, $module, $config);
     }
 
-    // Is deleted method
-    public function actionIndex(){
-
-        var_dump($this->module);
-    }
     /**
      * Renders the index view for the module
      * @return string
@@ -38,6 +33,6 @@ class ResizeController extends Controller
             throw new HttpException(400, 'Data invalid.');
         }
 
-        return $this->service->cropper()->end();
+        return $this->service->cropper();
     }
 }
