@@ -201,12 +201,13 @@ class Resizer
      */
     public function getRelativeResizePath(): string
     {
-        return FileHelper::replacer("/{$this->settings['relativeResizePath']}/{$this->resizeFileName}",
+        return FileHelper::replacer("{$this->settings['relativeResizePath']}/{$this->resizeFileName}",
             ['{client}' => $this->client]);
     }
 
     public function end(): self
     {
-
+        $this->imagick->destroy();
+        return $this;
     }
 }
