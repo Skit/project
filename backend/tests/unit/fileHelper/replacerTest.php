@@ -38,7 +38,7 @@ class replacerTest extends Unit
 
     public function testReplaceNotAssociativeArray(){
         $string = FileHelper::replacer('path/{:date}/{date}/{salt}', ['m', '{date}'=>date('H'), 'qwerty']);
-        expect($string)->equals('path/' . date('m/') . date('H/') .'d8578e');
+        expect($string)->equals('path/' . date('m/') . date('H/') . 'd8578e');
     }
 
     public function testUndefinedVariableException()
@@ -53,5 +53,11 @@ class replacerTest extends Unit
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Undefined function: {:foo}');
         FileHelper::replacer('{:foo}');
+    }
+
+    public function testDefaultFunctionSet()
+    {
+        $string = FileHelper::replacer('path/{client}/{:date}', ['{client}'=> 'TestForm']);
+        expect($string)->equals('path/TestForm/' . date('Y/m'));
     }
 }
