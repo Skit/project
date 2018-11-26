@@ -47,11 +47,12 @@ class FileHelper extends BaseFileHelper
                     if (array_key_exists($pattern, $replaceData)) {
                         $data[$pattern] = $replaceData[$pattern];
                     } else {
-                        $data[$pattern] = current($replaceData) ?? null;
+                        $data[$pattern] = (current($replaceData) === false) ? null : current($replaceData);
                     }
                     next($replaceData);
                 }
             }
+
             foreach ($data as $pattern => $value){
                 if (preg_match('~^{([^:]+)}$~', $pattern, $static)) {
                     switch ($static[1]) {
