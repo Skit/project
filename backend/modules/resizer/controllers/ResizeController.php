@@ -2,8 +2,6 @@
 
 namespace backend\modules\resizer\controllers;
 
-use Yii;
-use common\helpers\FileHelper;
 use backend\modules\resizer\services\Resizer;
 use yii\base\Module;
 use yii\web\Controller;
