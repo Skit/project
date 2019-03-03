@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "{{%posts_tags}}".
@@ -14,7 +15,7 @@ use Yii;
  * @property Tags $tag
  * @property Posts $post
  */
-class PostsTags extends \yii\db\ActiveRecord
+class PostsTags extends ActiveRecord
 {
     /**
      * {@inheritdoc}
@@ -24,29 +25,22 @@ class PostsTags extends \yii\db\ActiveRecord
         return '{{%posts_tags}}';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function rules()
+    public static function batchCreate(array $rows): int
     {
-        return [
-            [['tag_id', 'post_id'], 'required'],
-            [['tag_id', 'post_id'], 'integer'],
-            [['tag_id'], 'exist', 'skipOnError' => true, 'targetClass' => Tags::className(), 'targetAttribute' => ['tag_id' => 'id']],
-            [['post_id'], 'exist', 'skipOnError' => true, 'targetClass' => Posts::className(), 'targetAttribute' => ['post_id' => 'id']],
-        ];
+        return Yii::$app->db->createCommand()
+            ->batchInsert(self::tableName(), ['post_id', 'tag_id'], $rows)
+            ->execute();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels()
+    public static function batchDelete(array $rows): int
     {
-        return [
-            'id' => 'ID',
-            'tag_id' => 'Tag ID',
-            'post_id' => 'Post ID',
-        ];
+        $c = 0;
+        foreach ($rows as $row) {
+            $c += Yii::$app->db->createCommand()
+                ->delete(self::tableName(),['post_id' => $row[0], 'tag_id' => $row[1]])->execute();
+        }
+
+        return $c;
     }
 
     /**
@@ -54,7 +48,7 @@ class PostsTags extends \yii\db\ActiveRecord
      */
     public function getTag()
     {
-        return $this->hasOne(Tags::className(), ['id' => 'tag_id']);
+        return $this->hasOne(Tags::class, ['id' => 'tag_id']);
     }
 
     /**
@@ -62,6 +56,6 @@ class PostsTags extends \yii\db\ActiveRecord
      */
     public function getPost()
     {
-        return $this->hasOne(Posts::className(), ['id' => 'post_id']);
+        return $this->hasOne(Posts::class, ['id' => 'post_id']);
     }
 }

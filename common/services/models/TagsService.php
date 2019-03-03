@@ -8,37 +8,41 @@
 
 namespace common\services\models;
 
+use backend\models\PostsTags;
 use backend\models\Tags;
 use backend\forms\TagsForm;
 use common\exception\NotFoundException;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Inflector;
 use yii\base\Model;
 
-class TagsService
+class TagsService extends TagServicesRepo
 {
     /**
+     * Выполняет все операции над тегами: добавление, удаление, повышение/уменьшение частоты использования,
+     * добавляет связь тега и материала.
      * @param Model $model
-     * @return int
+     * @param string $oldTags
      * @throws \yii\db\Exception
      */
-    public function operation(Model $model): int
+    public function operation(Model $model, string $oldTags)
     {
-        $old = self::arrayFromString($model->oldAttributes->tags);
-        $new = self::arrayFromString($model->tags);
+        // FIXME связи создает не корректно, frequency не уменьшает. Отсальное не проверено
+        $old = $this->arrayFromString($oldTags);
+        $new = $this->arrayFromString($model->tags);
 
-        $deleteTags = self::getDelete($new, $old);
-        $addTags = self::getAdded($new, $old);
+        $deleteTags = $this->getDelete($new, $old);
+        $addTags = $this->getAdded($new, $old);
 
-        $existAdded = self::getExistTags($addTags);
-        $deleteTags = self::getExistTags($deleteTags);
+        $existAdded = $this->getExistTags($addTags);
+        $deleteTags = $this->getExistTags($deleteTags);
 
-        self::frequencyDown($deleteTags);
-        self::frequencyUp($existAdded);
+        $this->frequencyDown($deleteTags);
+        $this->frequencyUp($existAdded);
 
-        $create = self::getToCreate($addTags, $existAdded);
+        $create = $this->getToCreate($addTags, $existAdded);
+        $this->batchCreate($create);
 
-        return self::batchCreate($create);
+        $this->batchLink($model->id, $this->getAllByNames($addTags));
+        $this->batchUnLink($model->id, $deleteTags);
     }
 
     /**
@@ -48,11 +52,11 @@ class TagsService
      */
     public function createFromForm(TagsForm $form, bool $validate=true): Tags
     {
-        if($validate && !$form->validate()) {
+        if($validate && ! $form->validate()) {
             throw new \RuntimeException('Data is not valid.');
         }
 
-        return self::create($form->name, $form->slug);
+        return $this->create($form->name, $form->slug);
     }
 
     /**
@@ -63,73 +67,8 @@ class TagsService
     public function batchCreate(array $tags): int
     {
         return Tags::batchCreate(
-            self::setTagsSlug($tags)
+            $this->setTagsSlug($tags)
         );
-    }
-
-    /**
-     * @param string $tagsString
-     * @return array
-     */
-    public function arrayFromString(string $tagsString): array
-    {
-        return explode(',',
-            preg_replace('~\s~', '', mb_strtolower($tagsString))
-        );
-    }
-
-    /**
-     * @param string $tagsString
-     * @return array
-     */
-    public function setTagsSlug(array $tags): array
-    {
-        $tagNSlug = [];
-        foreach ($tags as $tag)
-        {
-            $tagNSlug[] = [
-                'name' => $tag,
-                'slug' => Inflector::slug($tag)
-            ];
-        }
-
-        return $tagNSlug;
-    }
-
-    /**
-     * @param array $tags
-     * @return array
-     */
-    public function getExistTags(array $tags): array
-    {
-        return Tags::find()
-            ->where(['in','name', $tags])
-            ->all();
-    }
-
-    /**
-     * @param $name
-     * @param $slug
-     * @return Tags
-     */
-    public function create($name, $slug): Tags
-    {
-        $tag = Tags::create($name, $slug);
-
-        if (!$tag->save()) {
-            throw new \RuntimeException('Saving error.');
-        }
-
-        return $tag;
-    }
-
-    /**
-     * @param $name
-     * @return Tags|null
-     */
-    public function getByName($name): ?Tags
-    {
-        return Tags::findOne(['name' => $name]);
     }
 
     /**
@@ -138,7 +77,7 @@ class TagsService
      */
     public function frequencyUp(array $tags): array
     {
-        return self::_frequency($tags, 1);
+        return $this->frequency($tags, 1);
     }
 
     /**
@@ -147,70 +86,37 @@ class TagsService
      */
     public function frequencyDown(array $tags): array
     {
-        return self::_frequency($tags, -1);
+        return $this->frequency($tags, -1);
     }
 
     /**
-     * @param array $new
-     * @param array $old
-     * @return array
+     * @param int $id
+     * @param array $addTags
+     * @return int
      */
-    public function getDelete(array $new, array $old): array
+    public function batchLink(int $id, array $addTags): int
     {
-        return self::_compareTagsArray([$old, $new]);
-    }
-
-    /**
-     * @param array $new
-     * @param array $old
-     * @return array
-     */
-    public function getAdded(array $new, array $old): array
-    {
-        return self::_compareTagsArray([$new, $old]);
-    }
-
-    /**
-     * @param array $added
-     * @param array $exist
-     * @return array
-     */
-    public function getToCreate(array $added, array $exist): array
-    {
-        return self::_compareTagsArray([$added, ArrayHelper::getColumn($exist, 'name')]);
-    }
-
-    /**
-     * @param array $data
-     * @return array
-     */
-    private function  _compareTagsArray(array $data): array
-    {
-        return array_diff($data[0], $data[1]);
-    }
-
-    /**
-     * @param array $tags
-     * @param int $value
-     * @return array
-     */
-    private function _frequency(array $tags, int $value): array
-    {
-        foreach ($tags as $key => $tag){
-
-            if(!$tag->updateFrequency($value)) {
-                throw new \RuntimeException('Unknown error.');
-            }
-
-            if($tag->frequency < 1) {
-
-                if(!$tag->delete()) {
-                    throw new \RuntimeException('Unknown error.');
-                }
-                unset($tags[$key]);
-            }
+        if (empty($addTags)) {
+            return 0;
         }
 
-        return $tags;
+        return PostsTags::batchCreate($this->setTagsReference($id, $addTags));
     }
+
+    /**
+     * @param int $id
+     * @param array $tags
+     * @return int
+     */
+    public function batchUnlink(int $id, array $tags): int
+    {
+        if (empty($tags)) {
+            return 0;
+        }
+
+        return PostsTags::batchDelete(
+            $this->setTagsReference($id, $tags)
+        );
+    }
+
 }

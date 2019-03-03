@@ -7,6 +7,8 @@ use yii\db\Migration;
  */
 class m181106_205549_categories extends Migration
 {
+    private $table = '{{%categories}}';
+
     /**
      * {@inheritdoc}
      */
@@ -14,7 +16,7 @@ class m181106_205549_categories extends Migration
     {
         $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
 
-        $this->createTable('{{%categories}}', [
+        $this->createTable($this->table, [
             'id' => $this->primaryKey()->unsigned(),
             'title' => $this->string(255)->notNull(),
             'slug' => $this->string(255)->notNull(),
@@ -22,10 +24,17 @@ class m181106_205549_categories extends Migration
             'meta_desc' => $this->string(255),
             'meta_key' => $this->string(255),
             'creator_id' => $this->integer()->unsigned()->notNull(),
-            'created_at' => $this->dateTime()->notNull(),
-            'updated_at' => $this->dateTime(),
+            'created_at' => $this->integer()->unsigned()->notNull(),
+            'updated_at' => $this->integer()->unsigned(),
             'is_active' => $this->smallInteger(1)->notNull()->defaultValue(1),
         ], $tableOptions);
+
+        Yii::$app->db->createCommand()->insert($this->table, [
+            'title' => 'Default',
+            'slug' => 'default',
+            'creator_id' => 0,
+            'created_at' => time(),
+        ])->execute();
     }
 
     /**

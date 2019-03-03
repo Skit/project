@@ -8,6 +8,7 @@
 
 namespace backend\tests\unit\tags;
 
+use backend\models\Tags;
 use common\services\models\TagsService;
 use Codeception\Test\Unit;
 
@@ -33,7 +34,8 @@ class CreateTest extends Unit
     public function testSuccess(){
 
         $tag = $this->service->create('ложка', 'spoon');
-        expect($tag)->isInstanceOf('backend\models\Tags');
+        $tag = Tags::findOne($tag->id);
+
         expect($tag->frequency)->equals(1);
         expect($tag->is_active)->equals(1);
 

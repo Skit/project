@@ -2,6 +2,7 @@
 
 namespace backend\controllers;
 
+use backend\models\Categories;
 use Yii;
 use backend\forms\CategoriesForm;
 use backend\forms\CategoriesSearch;
@@ -64,14 +65,19 @@ class CategoriesController extends Controller
      */
     public function actionCreate()
     {
-        $model = new CategoriesForm();
+        $form = new CategoriesForm();
 
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
+
+            $model = new Categories();
+            $model->setAttributes($form->getAttributes(), false);
+            $model->save();
+
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('create', [
-            'model' => $model,
+            'model' => $form,
         ]);
     }
 

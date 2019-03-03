@@ -8,6 +8,7 @@
 
 namespace backend\forms;
 
+use backend\models\Tags;
 use \common\validators\SlugValidator;
 use yii\base\Model;
 
@@ -15,7 +16,10 @@ class TagsForm extends Model
 {
     public
         $name,
-        $slug;
+        $slug,
+        $frequency,
+        $is_active;
+
 /*    private $_tag;
 
     public function __construct(Tags $tag = null, $config = [])
@@ -28,6 +32,9 @@ class TagsForm extends Model
         parent::__construct($config);
     }*/
 
+    /**
+     * @return array
+     */
     public function rules(): array
     {
         return [
@@ -37,5 +44,16 @@ class TagsForm extends Model
 /*            [['name', 'slug'], 'unique', 'targetClass' => Tags::class,
                 'filter' => $this->_tag ? ['<>', 'id', $this->_tag->id] : null]*/
         ];
+    }
+
+    /**
+     *
+     */
+    public function afterValidate()
+    {
+        $this->frequency = Tags::DEFAULT_FREQUENCY;
+        $this->is_active = Tags::DEFAULT_IS_ACTIVE;
+
+        return parent::afterValidate();
     }
 }

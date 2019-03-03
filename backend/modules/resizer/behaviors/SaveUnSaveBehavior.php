@@ -22,6 +22,7 @@ class SaveUnSaveBehavior extends Behavior
     {
         return [
             ActiveRecord::EVENT_BEFORE_INSERT => 'deleteUnsafeAfterCopy',
+            ActiveRecord::EVENT_BEFORE_UPDATE => 'deleteUnsafeAfterCopy',
         ];
     }
 
@@ -30,9 +31,9 @@ class SaveUnSaveBehavior extends Behavior
      */
     public function deleteUnsafeAfterCopy(): void
     {
-        $cropper = Yii::$app->session->get('cropper');
-
-        FileHelper::copyDirectory($cropper['unsave'], $cropper['target'], ['recursive' => true]);
-        FileHelper::removeDirectory($cropper['unsave']);
+        if ($cropper = Yii::$app->session->get('cropper')) {
+            FileHelper::copyDirectory($cropper['unsave'], $cropper['target'], ['recursive' => true]);
+            FileHelper::removeDirectory($cropper['unsave']);
+        }
     }
 }

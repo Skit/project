@@ -24,7 +24,8 @@ class PostsController extends Controller
     public function __construct
     (
         string $id, Module $module,
-        models\PostsService $service, forms\CategoriesService $categoriesFormsService,
+        models\PostsService $service,
+        forms\CategoriesService $categoriesFormsService,
         array $config = []
     )
     {
@@ -105,14 +106,20 @@ class PostsController extends Controller
      */
     public function actionUpdate($id)
     {
+        $form = new PostsForm();
         $model = $this->findModel($id);
+        $form->setAttributes($model->getAttributes());
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
+            $model->setAttributes($form->getAttributes(), false);
+            $model->save();
+            //$model = $this->service->create($model, 0);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('update', [
-            'model' => $model,
+            'model' => $form,
+            'categories' => $this->categoriesFormsService
         ]);
     }
 

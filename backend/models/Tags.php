@@ -35,14 +35,6 @@ class Tags extends ActiveRecord
         return '{{%tags}}';
     }
 
-    public function beforeSave($insert)
-    {
-        $this->frequency = self::DEFAULT_FREQUENCY;
-        $this->is_active = self::DEFAULT_IS_ACTIVE;
-
-        return parent::beforeSave($insert);
-    }
-
     /**
      * @param string $name
      * @param string $slug
@@ -78,5 +70,13 @@ class Tags extends ActiveRecord
     public function updateFrequency(int $value=1): int
     {
         return $this->updateCounters(['frequency' => $value]);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPostsTags()
+    {
+        return $this->hasMany(PostsTags::class, ['tag_id' => 'id']);
     }
 }

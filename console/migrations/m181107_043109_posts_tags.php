@@ -32,7 +32,7 @@ class m181107_043109_posts_tags extends Migration
         $this->addForeignKey('{{%fk_post_tags_tag_id}}',
             "{{%{$this->tableName}}}",
             'tag_id','{{%tags}}','id',
-            'CASCADE','RESTRICT'
+            'CASCADE','CASCADE'
         );
 
         $this->createIndex('{{%idx_posts_tags_post_id}}',
@@ -43,7 +43,7 @@ class m181107_043109_posts_tags extends Migration
         $this->addForeignKey('{{%fk_posts_tags_post_id}}',
             "{{%{$this->tableName}}}",
             'post_id','{{%posts}}','id',
-            'CASCADE','RESTRICT'
+            'CASCADE','CASCADE'
         );
     }
 

@@ -24,10 +24,22 @@ use yii\db\Expression;
  */
 class Categories extends \yii\db\ActiveRecord
 {
-    public function beforeSave($insert)
+    public const IS_ACTIVE = 1;
+
+    /**
+     * @param string $title
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public static function deleteByTitle(string $title): bool
     {
-        $this->created_at = date('YmdHis');
-        return parent::beforeSave($insert);
+        $category = self::find()
+            ->where(['title' => $title])
+            ->limit(1)
+            ->one();
+
+        return $category->delete() > 0 ? true : false;
     }
 
     /**

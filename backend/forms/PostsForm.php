@@ -37,6 +37,7 @@ class PostsForm extends Forms
     public $model;
 
     public
+        $id,
         $title,
         $slug,
         $image_url,
@@ -59,9 +60,10 @@ class PostsForm extends Forms
         return [
             [['title', 'slug', 'category_id'], 'required'],
             [['content', 'preview'], 'string'],
-            [['category_id', 'is_active'], 'integer'],
+            [['category_id', 'is_active', 'id', 'created_at'], 'integer'],
             [['title', 'slug', 'tags', 'meta_desc', 'meta_key'], 'string', 'max' => 255],
             [['image_url', 'video_url'], 'string', 'max' => 255],
+            //[['title', 'slug', 'category_id', 'content', 'preview', 'is_active', 'tags', 'meta_desc', 'meta_key', 'image_url', 'video_url', 'created_at', 'updated_at', 'creator_id'], 'safe']
            /* [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => Categories::class,
                 'targetAttribute' => ['category_id' => 'id']],*/
         ];
@@ -91,13 +93,5 @@ class PostsForm extends Forms
             'is_highlight' => 'Is Highlight',
             'is_active' => 'Is Active',
         ];
-    }
-
-    public function beforeValidate()
-    {
-        $this->creator_id = \Yii::$app->user->id;
-        $this->created_at = new Expression('NOW()');
-
-        return parent::beforeValidate();
     }
 }

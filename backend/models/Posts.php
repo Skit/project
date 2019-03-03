@@ -2,9 +2,11 @@
 
 namespace backend\models;
 
+use backend\components\behaviors\TagsBehavior;
 use backend\modules\resizer\behaviors\SaveUnSaveBehavior;
 use Yii;
 use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "{{%posts}}".
@@ -45,7 +47,7 @@ class Posts extends \yii\db\ActiveRecord
         return [
             TimestampBehavior::class,
             SaveUnSaveBehavior::class,
-
+            TagsBehavior::class,
         ];
     }
 
@@ -55,16 +57,11 @@ class Posts extends \yii\db\ActiveRecord
      */
     public function beforeSave($insert)
     {
+        //$this->creator_id = \Yii::$app->user->id;
+
+       // $this->created_at = new Expression('NOW()');
         $this->creator_id = Yii::$app->user->identity->id;
         return parent::beforeSave($insert);
-    }
-
-    /**
-     *
-     */
-    public function afterFind()
-    {
-        parent::afterFind();
     }
 
     /**
