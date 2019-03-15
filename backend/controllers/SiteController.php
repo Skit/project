@@ -1,7 +1,9 @@
 <?php
 namespace backend\controllers;
 
+use common\services\models\TagsService;
 use Yii;
+use yii\base\Module;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
@@ -12,6 +14,14 @@ use common\models\LoginForm;
  */
 class SiteController extends Controller
 {
+    private $_service;
+
+    public function __construct(string $id, Module $module, TagsService $service, array $config = [])
+    {
+        $this->_service = $service;
+        parent::__construct($id, $module, $config);
+    }
+
     /**
      * {@inheritdoc}
      */
