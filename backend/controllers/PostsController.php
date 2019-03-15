@@ -1,37 +1,41 @@
 <?php
-
 namespace backend\controllers;
 
-use common\services\forms;
-use common\services\models;
+use blog\managers\PostManager;
 use Yii;
-use backend\forms\PostsForm;
-use backend\forms\PostsSearch;
+use blog\managers\FormsManager;
+use common\services\{forms, models};
+use backend\forms\{CategoryForm, MetaTagsForm, PostsForm, PostsSearch, TagsForm};
 use backend\models\Posts;
 use yii\base\Module;
-use yii\web\Controller;
-use yii\web\NotFoundHttpException;
+use yii\web\{NotFoundHttpException};
 use yii\filters\VerbFilter;
 
 /**
  * PostsController implements the CRUD actions for Posts model.
+ *
+ * @property models\PostsService $PostsService
+ * @property forms\CategoriesService $CategoriesService
+ * @property FormsManager $FormsManager
+ * @property PostManager $PostManager
  */
 class PostsController extends Controller
 {
-    protected $service;
-    protected $categoriesFormsService;
-
     public function __construct
     (
         string $id, Module $module,
         models\PostsService $service,
         forms\CategoriesService $categoriesFormsService,
+        FormsManager $formsManager,
+        PostManager $postManager,
         array $config = []
     )
     {
-        $this->service = $service;
-        $this->categoriesFormsService = $categoriesFormsService;
-        parent::__construct($id, $module, $config);
+        parent::__construct(func_get_args(), $id, $module, $config);
+
+        $this->FormsManager
+            ->mergeForm(new PostsForm())
+            ->with(new TagsForm(), new MetaTagsForm(), new CategoryForm());
     }
 
     /**
@@ -84,16 +88,13 @@ class PostsController extends Controller
      */
     public function actionCreate()
     {
-        $form = new PostsForm();
-
-        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
-            $model = $this->service->create($form, 0);
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($this->FormsManager->loadPost() && $this->FormsManager->validate() && $this->FormsManager->mergeData()) {
+            $this->PostManager->create($this->FormsManager->getMainForm());
         }
 
         return $this->render('create', [
-            'model' => $form,
-            'categories' => $this->categoriesFormsService
+            'forms' => $this->FormsManager->getForms(),
+            'categories' => $this->CategoriesService
         ]);
     }
 
@@ -106,20 +107,18 @@ class PostsController extends Controller
      */
     public function actionUpdate($id)
     {
-        $form = new PostsForm();
-        $model = $this->findModel($id);
-        $form->setAttributes($model->getAttributes());
+        $this->FormsManager->fillForms($this->findModel($id));
 
-        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
-            $model->setAttributes($form->getAttributes(), false);
-            $model->save();
-            //$model = $this->service->create($model, 0);
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($this->FormsManager->loadPost() && $this->FormsManager->validate() && $this->FormsManager->mergeData()) {
+            $form = $this->FormsManager->getMainForm();
+            $this->PostManager->edit($form);
+
+            return $this->redirect(['view', 'id' => $form->id]);
         }
 
         return $this->render('update', [
-            'model' => $form,
-            'categories' => $this->categoriesFormsService
+            'forms' => $this->FormsManager->getForms(),
+            'categories' => $this->CategoriesService
         ]);
     }
 

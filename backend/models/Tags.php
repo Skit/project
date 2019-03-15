@@ -23,10 +23,6 @@ use yii\db\ActiveRecord;
  */
 class Tags extends ActiveRecord
 {
-    const
-        DEFAULT_IS_ACTIVE = 1,
-        DEFAULT_FREQUENCY = 1;
-
     /**
      * {@inheritdoc}
      */
@@ -47,29 +43,6 @@ class Tags extends ActiveRecord
         $tag->slug = $slug;
 
         return $tag;
-    }
-
-    /**
-     * Set rows as [[name=>tagName, slug=>tagSlug]]
-     *
-     * @param array $rows
-     * @return int
-     * @throws \yii\db\Exception
-     */
-    public static function batchCreate(array $rows): int
-    {
-        return Yii::$app->db->createCommand()
-            ->batchInsert(self::tableName(), ['name', 'slug'], $rows)
-            ->execute();
-    }
-
-    /**
-     * @param int $value
-     * @return int
-     */
-    public function updateFrequency(int $value=1): int
-    {
-        return $this->updateCounters(['frequency' => $value]);
     }
 
     /**

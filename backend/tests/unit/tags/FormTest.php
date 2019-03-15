@@ -8,7 +8,7 @@
 
 namespace backend\tests\unit\tags;
 
-use backend\forms\TagsForm;
+use backend\forms\TagForm;
 use Codeception\Test\Unit;
 use common\services\models\TagsService;
 
@@ -16,7 +16,7 @@ class FormTest extends Unit
 {
     public function testsSuccessTagCreate(){
 
-        $form = new TagsForm([
+        $form = new TagForm([
             'name' => 'ложка',
             'slug' => 'spoon'
         ]);
@@ -30,7 +30,7 @@ class FormTest extends Unit
 
     public function testNotCorrectValidate(){
 
-        $form = new TagsForm([
+        $form = new TagForm([
             'name' => 123,
             'slug' => 'spoonspoonspoonspoonspoonspoonspoonspoonspoonspoonspoon'
         ]);

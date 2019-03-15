@@ -31,7 +31,7 @@ class m181106_205857_post extends Migration
             'updated_at' => $this->integer()->unsigned(),
             'count_view' => $this->integer()->unsigned()->defaultValue(0),
             'is_highlight' => $this->smallInteger(1)->defaultValue(0),
-            'is_active' => $this->smallInteger(1)->notNull()->defaultValue(1),
+            'is_active' => $this->smallInteger(1)->notNull()->defaultValue(0),
         ], $tableOptions);
 
         $this->createIndex(

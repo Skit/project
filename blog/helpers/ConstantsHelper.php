@@ -6,10 +6,10 @@
  * Time: 10:56
  */
 
-namespace common\models;
+namespace blog\helpers;
 
 
-class Constants
+class ConstantsHelper
 {
     const ACTIVE = 1;
     const INACTIVE = 0;

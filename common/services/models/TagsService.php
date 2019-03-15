@@ -10,7 +10,7 @@ namespace common\services\models;
 
 use backend\models\PostsTags;
 use backend\models\Tags;
-use backend\forms\TagsForm;
+use backend\forms\TagForm;
 use common\exception\NotFoundException;
 use yii\base\Model;
 
@@ -46,11 +46,11 @@ class TagsService extends TagServicesRepo
     }
 
     /**
-     * @param TagsForm $form
+     * @param TagForm $form
      * @param bool $validate
      * @return Tags
      */
-    public function createFromForm(TagsForm $form, bool $validate=true): Tags
+    public function createFromForm(TagForm $form, bool $validate=true): Tags
     {
         if($validate && ! $form->validate()) {
             throw new \RuntimeException('Data is not valid.');

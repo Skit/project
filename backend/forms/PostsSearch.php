@@ -19,7 +19,7 @@ class PostsSearch extends Posts
     {
         return [
             [['id', 'creator_id', 'category_id', 'count_view', 'is_highlight', 'is_active'], 'integer'],
-            [['title', 'slug', 'image_url', 'video_url', 'content', 'preview', 'tags', 'meta_desc', 'meta_key', 'created_at', 'updated_at'], 'safe'],
+            [['title', 'slug', 'image_url', 'video_url', 'content', 'preview', 'tags', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -75,9 +75,9 @@ class PostsSearch extends Posts
             ->andFilterWhere(['like', 'video_url', $this->video_url])
             ->andFilterWhere(['like', 'content', $this->content])
             ->andFilterWhere(['like', 'preview', $this->preview])
-            ->andFilterWhere(['like', 'tags', $this->tags])
-            ->andFilterWhere(['like', 'meta_desc', $this->meta_desc])
-            ->andFilterWhere(['like', 'meta_key', $this->meta_key]);
+            ->andFilterWhere(['like', 'tags', $this->tags]);
+    /*        ->andFilterWhere(['like', 'meta_desc', $this->meta_desc])
+            ->andFilterWhere(['like', 'meta_key', $this->meta_key]);*/
 
         return $dataProvider;
     }

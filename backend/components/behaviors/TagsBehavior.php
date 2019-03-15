@@ -8,22 +8,25 @@
 
 namespace backend\components\behaviors;
 
+use blog\managers\TagsManager;
 use Yii;
-use common\services\models\TagsService;
 use yii\base\Behavior;
 use yii\db\ActiveRecord;
 
 class TagsBehavior extends Behavior
 {
-    public $attribute = 'tags';
+    public
+        $idAttribute = 'id',
+        $tagsAttribute = 'tags',
+        $oldTagsSessionKey = 'oldTags';
 
     protected
         $session,
-        $service;
+        $manager;
 
-    public function __construct(TagsService $service, array $config = [])
+    public function __construct(TagsManager $manager, array $config = [])
     {
-        $this->service = $service;
+        $this->manager = $manager;
         $this->session = Yii::$app->session;
         parent::__construct($config);
     }
@@ -36,25 +39,26 @@ class TagsBehavior extends Behavior
         return [
             ActiveRecord::EVENT_AFTER_INSERT => 'saveTags',
             ActiveRecord::EVENT_AFTER_UPDATE => 'saveTags',
+            // TODO сделать отдельный матод для работы с тегами при удалении статьи!
             ActiveRecord::EVENT_AFTER_DELETE => 'saveTags',
             ActiveRecord::EVENT_BEFORE_INSERT => 'setOldTags',
             ActiveRecord::EVENT_BEFORE_UPDATE => 'setOldTags',
-            ActiveRecord::EVENT_BEFORE_DELETE => 'setOldTags',
         ];
     }
 
     public function setOldTags(): void
     {
-        if (! isset($this->owner->oldAttributes[$this->attribute])) {
-            $this->owner->oldAttributes = [$this->attribute => ''];
+        if (! isset($this->owner->oldAttributes[$this->tagsAttribute])) {
+            $this->owner->oldAttributes = [$this->tagsAttribute => ''];
         }
 
-        $this->session->set('Tags', ['old' => $this->owner->oldAttributes[$this->attribute]]);
+        $this->session->set($this->oldTagsSessionKey, $this->owner->oldAttributes[$this->tagsAttribute]);
     }
 
     public function saveTags(): void
     {
-        $oldTags = $this->session->get('Tags')['old'];
-        $this->service->operation($this->owner, $oldTags);
+        $oldTags = $this->session->get($this->oldTagsSessionKey);
+        $owner = $this->owner;
+        $this->manager->createFromString($owner->{$this->idAttribute}, $owner->{$this->tagsAttribute}, $oldTags);
     }
 }

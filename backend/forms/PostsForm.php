@@ -9,7 +9,9 @@
 namespace backend\forms;
 
 
+use backend\models\BaseModel;
 use backend\models\Categories;
+use blog\managers\FormsManager;
 use common\models\Forms;
 use yii\db\Expression;
 
@@ -32,10 +34,8 @@ use yii\db\Expression;
  *
  * @property Categories $category
  */
-class PostsForm extends Forms
+class PostsForm extends FormsManager
 {
-    public $model;
-
     public
         $id,
         $title,
@@ -45,8 +45,7 @@ class PostsForm extends Forms
         $content,
         $preview,
         $tags,
-        $meta_desc,
-        $meta_key,
+        $meta_tags,
         $creator_id,
         $category_id,
         $created_at,
@@ -58,14 +57,16 @@ class PostsForm extends Forms
     public function rules()
     {
         return [
-            [['title', 'slug', 'category_id'], 'required'],
+            [['title', 'slug', 'content'], 'required'],
             [['content', 'preview'], 'string'],
-            [['category_id', 'is_active', 'id', 'created_at'], 'integer'],
-            [['title', 'slug', 'tags', 'meta_desc', 'meta_key'], 'string', 'max' => 255],
+            [['category_id', 'is_active'], 'integer'],
+            [['title', 'slug'], 'string', 'max' => 255],
             [['image_url', 'video_url'], 'string', 'max' => 255],
             //[['title', 'slug', 'category_id', 'content', 'preview', 'is_active', 'tags', 'meta_desc', 'meta_key', 'image_url', 'video_url', 'created_at', 'updated_at', 'creator_id'], 'safe']
-           /* [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => Categories::class,
-                'targetAttribute' => ['category_id' => 'id']],*/
+            ['is_active', 'in', 'range' => [0, 1]],
+            [['title', 'slug','content', 'preview', 'image_url', 'video_url'], 'filter', 'filter' => 'trim'],
+            // TODO попробовать не указывать тут вложенные формы совсем
+            [['meta_tags', 'category_id', 'tags'], 'safe']
         ];
     }
 

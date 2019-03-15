@@ -10,7 +10,10 @@ return [
     'id' => 'app-backend',
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
-    'bootstrap' => ['log'],
+    'bootstrap' => [
+        'log',
+        'backend\bootstrap\Inject',
+    ],
     'modules' => [
         'translator' => [
             'class' => 'backend\modules\translator\Module',
@@ -54,6 +57,8 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                //posts/view?id=18
+                //'<_c>/<_a>/<id:\d+>' => '<_c>/<_a>'
             ],
         ],
     ],

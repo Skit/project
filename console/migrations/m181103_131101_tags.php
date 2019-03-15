@@ -19,7 +19,7 @@ class m181103_131101_tags extends Migration
             'name' => $this->string(50)->notNull()->unique(),
             'slug' => $this->string(50)->notNull(),
             'frequency' => $this->smallInteger()->unsigned()->defaultValue(1),
-            'is_active' => $this->smallInteger(1)->defaultValue(1),
+            'is_active' => $this->smallInteger(1)->defaultValue(0),
         ], $tableOptions);
     }
     /**

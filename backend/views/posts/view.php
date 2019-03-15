@@ -36,8 +36,6 @@ $this->params['breadcrumbs'][] = $this->title;
             'content:ntext',
             'preview:ntext',
             'tags',
-            'meta_desc',
-            'meta_key',
             'creator_id',
             'category_id',
             'created_at',

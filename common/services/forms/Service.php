@@ -8,7 +8,7 @@
 
 namespace common\services\forms;
 
-use common\models\Constants;
+use blog\helpers\ConstantsHelper;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
@@ -92,7 +92,7 @@ class Service
     protected function records(): self
     {
         $this->model = $this->model->find()
-            ->where(['is_active'=>Constants::ACTIVE]);
+            ->where(['is_active'=>ConstantsHelper::ACTIVE]);
 
         return $this;
     }
