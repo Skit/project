@@ -31,7 +31,8 @@ class PostsTagsTransfer
         $c = 0;
         foreach ($rows as $row) {
             $c += Yii::$app->db->createCommand()
-                ->delete(PostsTags::tableName(),['post_id' => $row[0], 'tag_id' => $row[1]])->execute();
+                ->delete(PostsTags::tableName(),['post_id' => $row[0], 'tag_id' => $row[1]])
+                ->execute();
         }
 
         return $c;

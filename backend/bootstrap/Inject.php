@@ -2,11 +2,9 @@
 
 namespace backend\bootstrap;
 
-use backend\forms\CategoryForm;
-use backend\forms\MetaTagsForm;
-use backend\forms\PostsForm;
-use backend\forms\TagsForm;
-use blog\managers\FormsManager;
+use blog\managers\TagsManager;
+use blog\services\TagService;
+use blog\transfers\TagTransfer;
 use Yii;
 use yii\base\BootstrapInterface;
 
@@ -14,17 +12,11 @@ class Inject implements BootstrapInterface
 {
     public function bootstrap($app): void
     {
- /*       $container = Yii::$container;
+        $container = Yii::$container;
 
-        $container->setSingleton(FormsManager::class, function () use ($app): FormsManager
+        $container->setSingleton(TagsManager::class, function (): TagsManager
         {
-            return (new FormsManager())
-                    ->mergeForm(new PostsForm())
-                    ->with(new TagsForm(), new MetaTagsForm(), new CategoryForm());
+            return new TagsManager(new TagTransfer(), new TagService());
         });
-
-
-        $container->set(FormsManager::class);
-        $container->set('MegaForm', FormsManager::class);*/
     }
 }

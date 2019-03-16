@@ -14,8 +14,13 @@ class TagService
      */
     public function arrayFromString(string $tagsString, string $delimiter = ','): array
     {
-        // TODO проверить, если пустая строка
-        return $this->_normalizeTags(explode($delimiter, $tagsString));
+        if(trim($tagsString) === '') {
+            $result = [];
+        } else {
+            $result = $this->_normalizeTags(explode($delimiter, $tagsString));
+        }
+
+        return $result;
     }
 
     /**
@@ -23,9 +28,19 @@ class TagService
      * @param array $old
      * @return array
      */
-    public function getAdded(array $new, array $old): array
+    public function getToAdd(array $new, array $old): array
     {
         return $this->_compareTagsArray([$new, $old]);
+    }
+
+    /**
+     * @param array $new
+     * @param array $old
+     * @return array
+     */
+    public function getToDelete(array $new, array $old): array
+    {
+        return $this->_compareTagsArray([$old, $new]);
     }
 
     /**
@@ -38,7 +53,7 @@ class TagService
         foreach ($tags as $tag) {
             $tagNSlug[] = [
                 'name' => $tag,
-                'slug' => Inflector::slug($tag)
+                'slug' => $this->nameToSlug($tag)
             ];
         }
 
@@ -46,18 +61,12 @@ class TagService
     }
 
     /**
-     * @param int $id
-     * @param array $tags
-     * @return array
+     * @param string $tagName
+     * @return string
      */
-    public function tagsReferenceArray(int $id, array $tags): array
+    public function nameToSlug(string $tagName)
     {
-        $tagReference = [];
-        foreach ($tags as $tag) {
-            $tagReference[] = [$id, $tag->id];
-        }
-
-        return $tagReference;
+        return Inflector::slug($tagName);
     }
 
     /**
@@ -65,32 +74,32 @@ class TagService
      * @param array $exist
      * @return array
      */
-    public function getToCreate(array $added, array $exist): array
+    public function getNewTags(array $added, array $exist): array
     {
-        // TODO затестить array_column
         return $this->_compareTagsArray([$added, array_column($exist, 'name')]);
     }
 
     /**
-     * @param array $new
-     * @param array $old
-     * @return array
-     */
-    public function getDelete(array $new, array $old): array
-    {
-        return $this->_compareTagsArray([$old, $new]);
-    }
-
-    /**
-     * " Tag   2019 " to "Tag 2019"
      * @param array $tags
      * @return array
      */
     private function _normalizeTags(array $tags)
     {
         return array_map(function ($v){
-            return preg_replace('~\s+~', ' ', trim($v));
+            return $this->_normalizeString($v);
         }, $tags);
+    }
+
+    /**
+     * " Tag   2019 " to "Tag 2019"
+     *
+     * @param string $str
+     * @return string|string[]|null
+     */
+    private function _normalizeString(string $str)
+    {
+        $str = mb_strtolower(trim($str));
+        return preg_replace('~\s+~', ' ', $str);
     }
 
     /**

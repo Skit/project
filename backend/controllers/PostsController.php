@@ -1,6 +1,7 @@
 <?php
 namespace backend\controllers;
 
+use backend\models\PostsTags;
 use blog\managers\PostManager;
 use Yii;
 use blog\managers\FormsManager;
@@ -76,6 +77,11 @@ class PostsController extends Controller
      */
     public function actionView($id)
     {
+
+        dd(array_diff(['two', 'pp'], ['two', 'ee', 'rr']));
+        dd(array_udiff_assoc(['one', 'two', 'rr'], ['two', 'one', 'rr'], function ($right, $left){
+            dd($right, $left);
+        }));
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
@@ -89,7 +95,10 @@ class PostsController extends Controller
     public function actionCreate()
     {
         if ($this->FormsManager->loadPost() && $this->FormsManager->validate() && $this->FormsManager->mergeData()) {
-            $this->PostManager->create($this->FormsManager->getMainForm());
+            $form = $this->FormsManager->getMainForm();
+            $post = $this->PostManager->create($form);
+
+            return $this->redirect(['view', 'id' => $post->id]);
         }
 
         return $this->render('create', [

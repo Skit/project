@@ -8,16 +8,14 @@
 
 namespace backend\tests\unit\tags;
 
+use backend\models\Tags;
+use blog\services\TagService;
 use Codeception\Test\Unit;
-use common\fixtures\TagsFixture;
-use common\services\models\TagsService;
-use yii\base\DynamicModel;
-use yii\helpers\Inflector;
 
 /**
  * Class ServiceTest
  *
- * @property \common\services\models\TagsService $service
+ * @property \blog\services\TagService $service
  * @package backend\tests\unit\tags
  */
 class ServiceTest extends Unit
@@ -26,100 +24,66 @@ class ServiceTest extends Unit
 
     public function _before()
     {
-        $this->tester->haveFixtures([
-            'tags' => [
-                'class' => TagsFixture::class,
-                'dataFile' => codecept_data_dir() . 'new_tags.php'
-            ]
-        ]);
-        $this->service = new TagsService();
+        $this->service = new TagService();
     }
 
-    public function testStringToArraySuccess(){
-
-        expect($this->service->arrayFromString('молоко'))->equals(['молоко']);
-
+    public function testStringToArray()
+    {
+        $array = $this->service->arrayFromString('первый пошел, второй');
+        expect($array)->equals(['первый пошел', 'второй']);
     }
 
-    public function testSetSlugToTagsArray(){
-
-        $tags = $this->service->arrayFromString('молоко');
-        expect($this->service->setTagsSlug($tags))
-            ->equals([
-                [
-                    'name'=>'молоко',
-                    'slug'=>'moloko'
-                ]
-            ]);
-
-        $tags = $this->service->arrayFromString('молоко, яблоко,  банан ');
-        expect($this->service->setTagsSlug($tags))
-            ->equals([
-                [
-                    'name'=>'молоко',
-                    'slug'=>Inflector::slug('молоко')
-                ],
-                [
-                    'name'=>'яблоко',
-                    'slug'=>Inflector::slug('яблоко')
-                ],       [
-                    'name'=>'банан',
-                    'slug'=>Inflector::slug('банан')
-                ],
-            ]);
+    public function testEmptyStringToArray()
+    {
+        $array = $this->service->arrayFromString('');
+        expect($array)->equals([]);
     }
 
-    public function testGetExistTags() {
-
-        $exist = $this->tester->grabFixture('tags')->data;
-
-        $service = new TagsService();
-        $existTags = $service->getExistTags($exist);
-
-        expect($existTags)->count(count($exist));
-        expect($existTags[1])->isInstanceOf('backend\models\Tags');
-        expect($existTags[1]->name)->equals('tag2');
+    public function testStringNormalize()
+    {
+        $array = $this->service->arrayFromString('  первый пошел  ,   второй');
+        expect($array)->equals(['первый пошел', 'второй']);
     }
 
-    public function testDeleteFromString(){
-
-        $service = new TagsService();
-        $model = new DynamicModel([
-            'oldAttributes' => (object)['tags'=> 'земляника,банан,кунжут']
-        ]);
-        $old = $service->arrayFromString($model->oldAttributes->tags);
-
-        $new = $service->arrayFromString('земляника,банан');
-        $delete = $service->getDelete($new,$old);
-        expect($delete)->equals([2=>'кунжут']);
-
-        $new = $service->arrayFromString('земляника,кунжут');
-        $delete = $service->getDelete($new,$old);
-        expect($delete)->equals([1=>'банан']);
-
-        $new = $service->arrayFromString('кунжут');
-        $delete = $service->getDelete($new,$old);
-        expect($delete)->equals(['земляника','банан']);
-
-        $new = $service->arrayFromString('');
-        $delete = $service->getDelete($new,$old);
-        expect($delete)->equals(['земляника','банан','кунжут']);
+    public function testGetAddArrayWithoutOld()
+    {
+        $toAdd = $this->service->getToAdd(['one', 'three', 'two', 'four'], []);
+        expect($toAdd)->equals(['one', 'three', 'two', 'four']);
     }
 
-    public function testNewTagsFromString(){
+    public function testGetAddArrayOldLess()
+    {
+        $toAdd = $this->service->getToAdd(['one', 'three', 'two', 'four'], ['one', 'two']);
+        expect($toAdd)->equals([1 => 'three', 3 => 'four']);
+    }
 
-        $service = new TagsService();
-        $model = new DynamicModel([
-            'oldAttributes' => (object)['tags'=> 'земляника,банан,кунжут']
-        ]);
-        $old = $service->arrayFromString($model->oldAttributes->tags);
+    public function testGetAddArrayOldMore()
+    {
+        $toAdd = $this->service->getToAdd(['one'], ['five', 'two']);
+        expect($toAdd)->equals(['one']);
+    }
 
-        $new = $service->arrayFromString('земляника,банан,кунжут,мыло');
-        $delete = $service->getAdded($new,$old);
-        expect($delete)->equals([3=>'мыло']);
+    public function testGetAddArrayFromEmpty()
+    {
+        $toAdd = $this->service->getToAdd([], ['one', 'two']);
+        expect($toAdd)->equals([]);
+    }
 
-        $new = $service->arrayFromString('земляника,банан,мыло');
-        $delete = $service->getAdded($new,$old);
-        expect($delete)->equals([2=>'мыло']);
+    public function testGetToDeleteArray()
+    {
+        $toAdd = $this->service->getToDelete(['one', 'two'], ['one', 'three', 'two', 'four']);
+        expect($toAdd)->equals([1 => 'three', 3 => 'four']);
+    }
+
+    public function testGetNotExistTags()
+    {
+        $notExist = $this->service->getNewTags(['one', 'two', 'существует'], [Tags::create('существует', 'exist')]);
+        expect($notExist)->equals(['one', 'two']);
+    }
+
+    public function testAddSlugsToTags()
+    {
+        $tagsWithSlugs = $this->service->addedSlugsArray(['корова']);
+        expect($tagsWithSlugs)->equals([['name' => 'корова', 'slug' => 'korova']]);
     }
 }

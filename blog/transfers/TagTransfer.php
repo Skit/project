@@ -16,6 +16,7 @@ class TagTransfer
 {
 
     /**
+     * @deprecated
      * Set rows as [[name=>tagName, slug=>tagSlug]]
      *
      * @param array $rows
@@ -98,9 +99,9 @@ class TagTransfer
         }
     }
 
-    public function updateFrequency(Tags $tag, int $value)
+    public function updateFrequency(Tags $tag)
     {
-        if (! $tag->updateCounters(['frequency' => $value])) {
+        if (! $tag->updateCounters(['frequency' => $tag->frequency])) {
             throw new \RuntimeException('Unknown error.');
         }
     }
