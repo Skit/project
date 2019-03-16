@@ -18,6 +18,25 @@ use yii\db\ActiveRecord;
 class PostsTags extends ActiveRecord
 {
     /**
+     * @param int $postId
+     * @param int $tagId
+     * @return PostsTags
+     */
+    public static function create(int $postId, int $tagId): self
+    {
+        $postTag = new static();
+        $postTag->post_id = $postId;
+        $postTag->tag_id = $tagId;
+
+        return $postTag;
+    }
+
+    public function delete()
+    {
+
+    }
+
+    /**
      * {@inheritdoc}
      */
     public static function tableName()

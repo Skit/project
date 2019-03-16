@@ -4,13 +4,13 @@ namespace backend\models;
 
 use backend\behaviors\ImperaviBugFixBehavior;
 use backend\behaviors\MetaTagsBehavior;
-use backend\components\behaviors\TagsBehavior;
+use backend\behaviors\PostTagsBehavior;
+use backend\behaviors\TagsBehavior;
 use backend\modules\resizer\behaviors\SaveUnSaveBehavior;
-use blog\entities\MetaTags;
 use Yii;
 use yii\base\Model;
 use yii\behaviors\TimestampBehavior;
-use yii\db\Expression;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
 /**
@@ -38,75 +38,99 @@ use yii\db\ActiveRecord;
  */
 class Posts extends ActiveRecord
 {
-    /*
-     *  * @property int $id
- * @property string $title
- * @property string $slug
- * @property string $image_url
- * @property string $video_url
- * @property string $content
- * @property string $preview
- * @property string $tags
- * @property int $creator_id
- * @property int $category_id
- * @property string $created_at
- * @property string $updated_at
- * @property int $count_view
- * @property int $is_highlight
- * @property int $is_active
+
+    private
+        /*
+         * @var array
+         */
+        $_linkTags = [],
+        /**
+         * @var array
+         */
+        $_unlinkTags = [];
+
+    /**
+     * {@inheritdoc}
      */
-    public static function create(Model $form)
+    public static function tableName(): string
     {
-        $post = new self();
+        return '{{%posts}}';
+    }
+
+    /**
+     * @param Model $form
+     * @return Posts
+     */
+    public static function create(Model $form): self
+    {
+        $post = new static();
         $post->setAttributes($form->getAttributes(), false);
         $post->creator_id = Yii::$app->user->identity->id;
 
         return $post;
     }
 
-    public static function edit(Model $form, self $post)
+    /**
+     * @param Model $form
+     * @param self $post
+     */
+    public static function edit(Model $form, self $post): void
     {
         $post->setAttributes($form->getAttributes(), false);
-        return $post;
     }
+
+    /**
+     * @param $tagId
+     */
+    public function addLinkTag($tagId): void
+    {
+        $this->_linkTags[] = $tagId;
+    }
+
+    /**
+     * @param $tagId
+     */
+    public function addUnlinkTag($tagId): void
+    {
+        $this->_unlinkTags[] = $tagId;
+    }
+
+    /**
+     * @param $tagId
+     */
+    public function getLinkTags(): array
+    {
+        return $this->_linkTags;
+    }
+
+    /**
+     * @param $tagId
+     */
+    public function getUnlinkTags(): array
+    {
+        return $this->_unlinkTags;
+    }
+
 
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
-    {
-        return '{{%posts}}';
-    }
-
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             TimestampBehavior::class,
             SaveUnSaveBehavior::class,
-            TagsBehavior::class,
             ImperaviBugFixBehavior::class,
             MetaTagsBehavior::class,
+            PostTagsBehavior::class,
         ];
     }
 
     /**
-     * @param bool $insert
-     * @return bool
-     */
-/*    public function beforeSave($insert)
-    {
-        //$this->creator_id = \Yii::$app->user->id;
-
-       // $this->created_at = new Expression('NOW()');
-
-        return parent::beforeSave($insert);
-    }*/
-
-    /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCategory()
+    public function getCategory(): ActiveQuery
     {
         return $this->hasOne(Categories::class, ['id' => 'category_id']);
     }
@@ -114,7 +138,7 @@ class Posts extends ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getPostsTags()
+    public function getPostsTags(): ActiveQuery
     {
         return $this->hasMany(PostsTags::class, ['post_id' => 'id']);
     }

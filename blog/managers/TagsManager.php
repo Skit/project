@@ -4,122 +4,119 @@
 namespace blog\managers;
 
 
+use backend\models\Posts;
+use backend\models\Tags;
 use blog\services\TagService;
-use blog\transfers\PostsTagsTransfer;
+use blog\entities\TagsData;
 use blog\transfers\TagTransfer;
 
+/**
+ * Class TagsManager
+ * @package blog\managers
+ */
 class TagsManager
 {
+    private
+        $newTags = [],
+        $oldTags = [];
+
     public
-        $tagService,
-        $tagTransfer,
-        $postsTagsTransfer;
+        $service,
+        $transfer;
 
-    public function __construct(TagTransfer $tagTransfer, TagService $tagService, PostsTagsTransfer $postsTagsTransfer)
+    /**
+     * TagsManager constructor.
+     * @param TagTransfer $tagTransfer
+     * @param TagService $tagService
+     */
+    public function __construct(TagTransfer $tagTransfer, TagService $tagService)
     {
-        $this->tagService = $tagService;
-        $this->tagTransfer = $tagTransfer;
-        $this->postsTagsTransfer = $postsTagsTransfer;
-    }
-
-    public function createFromString(int $id, string $tags, string $oldTags): void
-    {
-        // FIXME связи создает не корректно, frequency не уменьшает. Отсальное не проверено
-        $old = $this->tagService->arrayFromString($oldTags);
-        $new = $this->tagService->arrayFromString($tags);
-
-        $deleteTags = $this->tagService->getDelete($new, $old);
-        // TODO затестить если aggTags пустой массив
-        $addTags = $this->tagService->getAdded($new, $old);
-
-        $existAdded = $this->tagTransfer->getExistTags($addTags);
-        $deleteTags = $this->tagTransfer->getExistTags($deleteTags);
-
-        $this->frequencyDown($deleteTags);
-        $this->frequencyUp($existAdded);
-
-        $create = $this->tagService->getToCreate($addTags, $existAdded);
-        $this->batchCreate($create);
-
-        $this->batchLink($id, $addTags);
-        $this->batchUnLink($id, $deleteTags);
+        $this->service = $tagService;
+        $this->transfer = $tagTransfer;
     }
 
     /**
-     * @param int $id
-     * @param array $addTags
-     * @return int
-     * @throws \yii\db\Exception
+     * @param Posts $posts
+     * @return TagsManager
      */
-    public function batchLink(int $id, array $addTags): int
+    public function fromModel(Posts $posts): self
     {
-        $addTags = $this->tagTransfer->getExistTags($addTags);
-        $addTags = $this->tagService->tagsReferenceArray($id, $addTags);
+        $newTagsStr = $posts->tags;
+        $oldTagsStr = $posts->oldAttributes['tags'] ?? '';
 
-        return $this->postsTagsTransfer->batchCreate($addTags);
+        $this->fromNewOldString($newTagsStr, $oldTagsStr);
+
+        return $this;
     }
 
     /**
-     * @param int $id
-     * @param array $tags
-     * @return int
-     * @throws \yii\db\Exception
+     * @param string $newTags
+     * @param string $oldTags
+     * @return TagsManager
      */
-    public function batchUnlink(int $id, array $tags): int
+    public function fromNewOldString(string $newTags, string $oldTags): self
     {
-        return $this->postsTagsTransfer->batchDelete(
-            $this->tagService->tagsReferenceArray($id, $tags)
+        if ($newTags !== $oldTags) {
+            $this->oldTags = $this->service->arrayFromString($oldTags);
+            $this->newTags = $this->service->arrayFromString($newTags);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return TagsData
+     */
+    public function get(): TagsData
+    {
+        $addedTags = $this->service->getToAdd($this->newTags, $this->oldTags);
+        $toDelete = $this->service->getToDelete($this->newTags, $this->oldTags);
+        $existTag = $this->transfer->getExistTags($addedTags);
+        $notExistTag = $this->service->getNewTags($addedTags, $existTag);
+
+        return new TagsData(
+            $existTag,
+            $this->savedFromArray($notExistTag),
+            $this->transfer->getExistTags($toDelete)
         );
     }
 
     /**
-     * @param array $create
-     * @return int
-     * @throws \yii\db\Exception
-     */
-    protected function batchCreate(array $create): int
-    {
-        $tagsWithSlug = $this->tagService->addedSlugsArray($create);
-        return $this->tagTransfer->batchCreate($tagsWithSlug);
-    }
-
-    /**
-     * @param array $tags
-     * @return array
-     */
-    protected function frequencyUp(array $tags): array
-    {
-        return $this->frequency($tags, 1);
-    }
-
-    /**
-     * @param array $tags
-     * @return array
-     */
-    protected function frequencyDown(array $tags): array
-    {
-        return $this->frequency($tags, -1);
-    }
-
-
-    /**
-     * @param array $tags
-     * @param int $value
-     * @return array
+     * @param Tags $tag
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */
-    private function frequency(array $tags, int $value): array
+    public function frequencyDown(Tags $tag)
     {
-        foreach ($tags as $key => $tag) {
-            $this->tagTransfer->updateFrequency($tag, $value);
+        if($tag->frequency === 1) {
+            $this->transfer->delete($tag);
+        } else {
+            $tag->frequencyDown();
+            $this->transfer->save($tag);
+        }
+    }
 
-            if ($tag->frequency < 1) {
-                $this->tagTransfer->delete($tag);
-                unset($tags[$key]);
-            }
+    /**
+     * @param Tags $tag
+     */
+    public function frequencyUp(Tags $tag)
+    {
+        $tag->frequencyUp();
+        $this->transfer->save($tag);
+    }
+
+    /**
+     * @param array $tags
+     */
+    public function savedFromArray(array $tags)
+    {
+        $result = [];
+        foreach ($tags as $name) {
+            $tag = Tags::create($name, $this->service->nameToSlug($name));
+            $this->transfer->save($tag);
+            $result[] = $tag;
         }
 
-        return $tags;
+        return $result;
     }
 }
