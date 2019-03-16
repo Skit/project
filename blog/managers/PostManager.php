@@ -5,7 +5,6 @@ namespace blog\managers;
 
 use backend\forms\PostsForm;
 use backend\models\Posts;
-use blog\transfers\CategoryTransfer;
 use blog\transfers\PostTransfer;
 
 class PostManager
@@ -18,31 +17,78 @@ class PostManager
         $posts,
         $categories;
 
-    public function __construct(PostTransfer $postTransfer)
+    /**
+     * @var TagsManager
+     */
+    private $tagsManager;
+
+
+    public function __construct(PostTransfer $postTransfer, TagsManager $tagsManager)
     {
         $this->postTransfer = $postTransfer;
+        $this->tagsManager = $tagsManager;
     }
 
-    public function create(PostsForm $forms)
+    /**
+     * @param PostsForm $forms
+     * @return Posts
+     */
+    public function create(PostsForm $forms): Posts
     {
         $post = Posts::create($forms);
+        $tagsData = $this->tagsManager->fromModel($post)->get();
+
+        $this->linkTags($post, $tagsData->savedTag, $tagsData->existTag);
+        $this->unlinkTags($post, $tagsData->toDelete);
+
         $this->postTransfer->save($post);
+
+        return $post;
     }
 
+    /**
+     * @param PostsForm $forms
+     */
     public function edit(PostsForm $forms)
     {
         $post = $this->postTransfer->byId($forms->id);
-        $post = Posts::edit($forms, $post);
+        Posts::edit($forms, $post);
+        $tagsData = $this->tagsManager->fromModel($post)->get();
+
+        $this->linkTags($post, $tagsData->savedTag, $tagsData->existTag);
+        $this->unlinkTags($post, $tagsData->toDelete);
+
         $this->postTransfer->save($post);
     }
 
-    public function activate()
+    /**
+     * @param Posts $post
+     * @param array ...$tagsCollection
+     */
+    protected function linkTags(Posts $post,  array ...$tagsCollection)
     {
+        foreach ($tagsCollection as $tags) {
+            foreach ($tags as $tag) {
 
+                if(! $tag->isNewRecord) {
+                    $this->tagsManager->frequencyUp($tag);
+                }
+                $post->addLinkTag($tag);
+            }
+        }
     }
 
-    public function draft()
+    /**
+     * @param Posts $post
+     * @param array $tags
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    protected function unlinkTags(Posts $post, array $tags)
     {
-
+        foreach ($tags as $tag) {
+            $this->tagsManager->frequencyDown($tag);
+            $post->addUnlinkTag($tag);
+        }
     }
 }

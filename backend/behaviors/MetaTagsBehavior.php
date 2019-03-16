@@ -8,7 +8,6 @@ use blog\entities\MetaTags;
 use yii\base\Behavior;
 use yii\base\Event;
 use yii\db\ActiveRecord;
-use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
 class MetaTagsBehavior extends Behavior

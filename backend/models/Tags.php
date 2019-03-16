@@ -9,6 +9,7 @@
 namespace backend\models;
 
 use Yii;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
 /**
@@ -23,10 +24,14 @@ use yii\db\ActiveRecord;
  */
 class Tags extends ActiveRecord
 {
+    const
+        DEFAULT_FREQUENCY = 1,
+        IS_ACTIVE = 1;
+
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%tags}}';
     }
@@ -41,14 +46,38 @@ class Tags extends ActiveRecord
         $tag = new self();
         $tag->name = $name;
         $tag->slug = $slug;
+        $tag->frequency = self::DEFAULT_FREQUENCY;
+        $tag->is_active = self::IS_ACTIVE;
 
         return $tag;
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @param string $name
+     * @param string $slug
+     * @param int $isActive
      */
-    public function getPostsTags()
+    public function edit(string $name, string $slug, int $isActive): void
+    {
+        $this->name = $name;
+        $this->slug = $slug;
+        $this->is_active = $isActive;
+    }
+
+    public function frequencyUp(): void
+    {
+        $this->frequency++;
+    }
+
+    public function frequencyDown(): void
+    {
+        $this->frequency--;
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getPostsTags(): ActiveQuery
     {
         return $this->hasMany(PostsTags::class, ['tag_id' => 'id']);
     }
