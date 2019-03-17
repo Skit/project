@@ -20,7 +20,8 @@
         "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0",
 		"bower-asset/bootstrap": "^3.3",
 		"npm-asset/jquery": "^2.2",
-        "bower-asset/angular-imperavi": "^0.1.9"
+        "bower-asset/angular-imperavi": "^0.1.9",
+        "dmstr/yii2-adminlte-asset": "^2.1"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

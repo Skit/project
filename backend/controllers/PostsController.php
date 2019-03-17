@@ -77,11 +77,6 @@ class PostsController extends Controller
      */
     public function actionView($id)
     {
-
-        dd(array_diff(['two', 'pp'], ['two', 'ee', 'rr']));
-        dd(array_udiff_assoc(['one', 'two', 'rr'], ['two', 'one', 'rr'], function ($right, $left){
-            dd($right, $left);
-        }));
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
