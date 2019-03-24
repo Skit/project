@@ -24,7 +24,8 @@
         "vova07/yii2-imperavi-widget": "^2.0",
         "yiisoft/yii2-jui": "^2.0",
         "kartik-v/yii2-widget-datetimepicker": "*",
-        "ext-imagick": "*"
+        "ext-imagick": "*",
+        "ext-json": "*"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
