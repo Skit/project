@@ -13,6 +13,7 @@ return [
     'bootstrap' => [
         'log',
         'backend\bootstrap\Inject',
+        'backend\bootstrap\Widgets',
     ],
     'modules' => [
         'translator' => [
@@ -61,6 +62,7 @@ return [
                 //'<_c>/<_a>/<id:\d+>' => '<_c>/<_a>'
             ],
         ],
+
     ],
     'params' => $params,
 ];

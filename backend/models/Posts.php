@@ -5,7 +5,7 @@ namespace backend\models;
 use backend\behaviors\ImperaviBugFixBehavior;
 use backend\behaviors\MetaTagsBehavior;
 use backend\behaviors\PostTagsBehavior;
-use backend\behaviors\TagsBehavior;
+use backend\behaviors\SaveDraftImagesBehavior;
 use backend\modules\resizer\behaviors\SaveUnSaveBehavior;
 use Yii;
 use yii\base\Model;
@@ -112,7 +112,6 @@ class Posts extends ActiveRecord
     }
 
 
-
     /**
      * {@inheritdoc}
      */
@@ -120,7 +119,7 @@ class Posts extends ActiveRecord
     {
         return [
             TimestampBehavior::class,
-            SaveUnSaveBehavior::class,
+            SaveDraftImagesBehavior::class,
             ImperaviBugFixBehavior::class,
             MetaTagsBehavior::class,
             PostTagsBehavior::class,

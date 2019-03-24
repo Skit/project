@@ -36,7 +36,7 @@ class PostManager
     public function create(PostsForm $forms): Posts
     {
         $post = Posts::create($forms);
-        $tagsData = $this->tagsManager->fromModel($post)->get();
+        $tagsData = $this->tagsManager->fromModel($post)->load();
 
         $this->linkTags($post, $tagsData->savedTag, $tagsData->existTag);
         $this->unlinkTags($post, $tagsData->toDelete);
@@ -53,7 +53,7 @@ class PostManager
     {
         $post = $this->postTransfer->byId($forms->id);
         Posts::edit($forms, $post);
-        $tagsData = $this->tagsManager->fromModel($post)->get();
+        $tagsData = $this->tagsManager->fromModel($post)->load();
 
         $this->linkTags($post, $tagsData->savedTag, $tagsData->existTag);
         $this->unlinkTags($post, $tagsData->toDelete);

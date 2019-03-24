@@ -99,7 +99,7 @@ class Resizer
     public function imagick(): self
     {
         if (!file_exists($this->file->tempName)) {
-            throw new RuntimeException('File does not exist!');
+            throw new RuntimeException('Image does not exist!');
         }
         $this->imagick = models\Resizer::imagick($this->file->tempName);
 

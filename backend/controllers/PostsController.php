@@ -1,15 +1,16 @@
 <?php
 namespace backend\controllers;
 
-use backend\models\PostsTags;
-use blog\managers\PostManager;
+use blog\fileManager\services\FileService;
 use Yii;
-use blog\managers\FormsManager;
+use blog\managers\{PostManager, TagsManager, FormsManager};
+use blog\fileManager\ImageManager;
+use blog\fileManager\source\Image;
 use common\services\{forms, models};
 use backend\forms\{CategoryForm, MetaTagsForm, PostsForm, PostsSearch, TagsForm};
 use backend\models\Posts;
-use yii\base\Module;
-use yii\web\{NotFoundHttpException};
+use yii\base\{DynamicModel, Module};
+use yii\web\{NotFoundHttpException, Response, UploadedFile};
 use yii\filters\VerbFilter;
 
 /**
@@ -19,16 +20,22 @@ use yii\filters\VerbFilter;
  * @property forms\CategoriesService $CategoriesService
  * @property FormsManager $FormsManager
  * @property PostManager $PostManager
+ * @property TagsManager $TagsManager
+ * @property ImageManager $ImageManager
+ * @property FileService $FileService
  */
 class PostsController extends Controller
 {
     public function __construct
     (
         string $id, Module $module,
+        FileService $fileService,
         models\PostsService $service,
+        TagsManager $tags,
         forms\CategoriesService $categoriesFormsService,
         FormsManager $formsManager,
         PostManager $postManager,
+        ImageManager $imageManager,
         array $config = []
     )
     {
@@ -49,6 +56,7 @@ class PostsController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['POST'],
+                    'AutoCompleteTags' => ['POST']
                 ],
             ],
         ];
@@ -138,6 +146,42 @@ class PostsController extends Controller
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
+    }
+
+    /**
+     * @param $term
+     * @return array
+     */
+    public function actionAutoCompleteTags($term)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        return $this->TagsManager->searchAutocomplete($term, true);
+    }
+
+    public function actionShowImages()
+    {
+
+    }
+
+    public function actionUploadImage()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $file = UploadedFile::getInstanceByName('file');
+
+        $model = new DynamicModel(compact('file'));
+        $model->addRule('file', 'image', ['skipOnEmpty' => false, 'extensions' => 'png, jpg'])->validate();
+
+        if($model->hasErrors()) {
+            // TODO imperavi не выдает это сообщение
+            return ['error' => $model->getFirstError('file')];
+        }
+
+        return $this->ImageManager->imperaviResize(
+            new Image($file->name, $file->tempName, $file->size, $file->type),
+            Yii::$app->params['resizer']['patterns']['imperavi'],
+            Yii::$app->params['resizer']['paths']
+        );
     }
 
     /**

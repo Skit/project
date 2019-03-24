@@ -29,6 +29,24 @@ class TagTransfer
             ->batchInsert(Tags::tableName(), ['name', 'slug'], $tagsWithSlug)
             ->execute();
     }
+
+    /**
+     * @param string $name
+     * @param bool $asArray
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public function searchAutocomplete(string $name, $asArray = false): array
+    {
+        $query = Tags::find()
+            ->select('LOWER(name) as value')
+            ->where(['like', 'name', $name]);
+
+        if($asArray) {
+            $query->asArray();
+        }
+
+        return $query->all();
+    }
     /**
      * @param array $tags
      * @return array

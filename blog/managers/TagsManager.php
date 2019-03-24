@@ -67,7 +67,7 @@ class TagsManager
     /**
      * @return TagsData
      */
-    public function get(): TagsData
+    public function load(): TagsData
     {
         $addedTags = $this->service->getToAdd($this->newTags, $this->oldTags);
         $toDelete = $this->service->getToDelete($this->newTags, $this->oldTags);
@@ -79,6 +79,25 @@ class TagsManager
             $this->savedFromArray($notExistTag),
             $this->transfer->getExistTags($toDelete)
         );
+    }
+
+    /**
+     * @param string $term
+     * @param bool $research
+     * @return array
+     */
+    public function searchAutocomplete(string $term, $research = false): array
+    {
+        research:
+        $result = $this->transfer->searchAutocomplete($term, true);
+
+        if(empty($result) && $research) {
+            $research = false;
+            // TODO вынести в отдельный класс и заинжектить keyboardTranslate
+            $term = keyboardTranslate($term);
+            goto research;
+        }
+        return $result;
     }
 
     /**

@@ -81,7 +81,7 @@ class Module extends \common\components\Module
             throw new RuntimeException('Module attribute "clients" must be set');
         }
 
-        if (array_search($client, $this->clients) !== false) {
+        if (in_array($client, $this->clients)) {
             return $this->moduleParams;
         }
         elseif (key_exists($client, $this->clients)) {
