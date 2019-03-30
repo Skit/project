@@ -113,7 +113,7 @@ use vova07\imperavi\Widget as Imperavi;
         <div class="col-md-6">
             <div class="box box-default">
                 <div class="box-body">
-                    <?= $form->field($forms->PostsForm, 'created_at')->textInput(['maxlength' => true])->widget(DateTimePicker::class) ?>
+                    <?= $form->field($forms->PostsForm, 'published_at')->textInput(['maxlength' => true])->widget(DateTimePicker::class) ?>
                 </div>
             </div>
         </div>

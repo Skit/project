@@ -29,6 +29,7 @@ use yii\db\ActiveRecord;
  * @property int $category_id
  * @property string $created_at
  * @property string $updated_at
+ * @property string $published_at
  * @property int $count_view
  * @property int $is_highlight
  * @property int $is_active
@@ -65,6 +66,8 @@ class Posts extends ActiveRecord
     {
         $post = new static();
         $post->setAttributes($form->getAttributes(), false);
+        $post->published_at = $post->published_at ? strtotime($post->published_at) : $post->touch('published_at');
+        $post->published_at += rand(300, 3000); // Handle publish imitation
         $post->creator_id = Yii::$app->user->identity->id;
 
         return $post;
@@ -77,6 +80,8 @@ class Posts extends ActiveRecord
     public static function edit(Model $form, self $post): void
     {
         $post->setAttributes($form->getAttributes(), false);
+        $post->published_at = $post->published_at ? strtotime($post->published_at) : time();
+        $post->published_at += rand(300, 1200); // Handle publish imitation
     }
 
     /**

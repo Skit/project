@@ -49,6 +49,7 @@ class PostsForm extends FormsManager
         $creator_id,
         $category_id,
         $created_at,
+        $published_at,
         $updated_at,
         $is_active;
     /**
@@ -60,8 +61,7 @@ class PostsForm extends FormsManager
             [['title', 'slug', 'content'], 'required'],
             [['content', 'preview'], 'string'],
             [['category_id', 'is_active'], 'integer'],
-            [['title', 'slug'], 'string', 'max' => 255],
-            [['image_url', 'video_url'], 'string', 'max' => 255],
+            [['title', 'slug', 'image_url', 'video_url', 'published_at'], 'string', 'max' => 255],
             //[['title', 'slug', 'category_id', 'content', 'preview', 'is_active', 'tags', 'meta_desc', 'meta_key', 'image_url', 'video_url', 'created_at', 'updated_at', 'creator_id'], 'safe']
             ['is_active', 'in', 'range' => [0, 1]],
             [['title', 'slug','content', 'preview', 'image_url', 'video_url'], 'filter', 'filter' => 'trim'],
@@ -89,6 +89,7 @@ class PostsForm extends FormsManager
             'creator_id' => 'Creator ID',
             'category_id' => 'Category ID',
             'created_at' => 'Created At',
+            'published_at' => 'Published At',
             'updated_at' => 'Updated At',
             'count_view' => 'Count View',
             'is_highlight' => 'Is Highlight',
