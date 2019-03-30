@@ -14,7 +14,8 @@ use yii\db\ActiveRecord;
 
 class SaveDraftImagesBehavior extends Behavior
 {
-    public $contentAttribute = 'content';
+    public
+        $contentAttribute = 'content';
     /**
      * @var DraftFilesSession
      */

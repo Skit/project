@@ -33,6 +33,11 @@ class Cropper extends InputWidget
          */
         $url = '/resizer/resize/cropper',
         /**
+         * Set css with and height
+         * @var array
+         */
+        $canvasSize,
+        /**
          * Field options
          * @var array
          */
@@ -101,11 +106,6 @@ class Cropper extends InputWidget
          */
         $acceptExtensions,
         /**
-         * Set css with and height
-         * @var array
-         */
-        $canvasSize,
-        /**
          * @var string model->formName()
          */
         $formName;
@@ -146,7 +146,7 @@ class Cropper extends InputWidget
         $this->formName = $this->model->formName();
         $moduleParams = Yii::$app->getModule('resizer')->clientSettings($this->formName);
 
-        $this->canvasSize = $moduleParams['size'];
+        $this->canvasSize = $this->canvasSize ?? $moduleParams['size'];
         $this->acceptExtensions = $moduleParams['allowExtensions'];
         $this->acceptExtensions = '.' . str_replace([',', ' '], [',.', ''], $this->acceptExtensions);
 
@@ -160,11 +160,11 @@ class Cropper extends InputWidget
     {
         assetWidget::register($this->view);
 
-        $script = self::scriptCanvasSize();
-        $script .= self::scriptCropperInit();
-        $script .= self::scriptImageLoad();
-        $script .= self::scriptMethodButtons();
-        $script .= self::scriptSendCropperData();
+        $script = $this->scriptCanvasSize();
+        $script .= $this->scriptCropperInit();
+        $script .= $this->scriptImageLoad();
+        $script .= $this->scriptMethodButtons();
+        $script .= $this->scriptSendCropperData();
 
         $this->view->registerJs($script);
 
@@ -360,11 +360,10 @@ class Cropper extends InputWidget
         }
             \$image.cropper('getCroppedCanvas').toBlob(function(blob){
                 const formData = new FormData();
-                formData.append('image', blob);
+                formData.append('image', blob.slice(0, 104857600, {type: \"application/octet-stream\"}));
                 formData.append('canvasData', JSON.stringify(\$image.cropper('getCanvasData')));
-                formData.append('fileName', JSON.stringify(uploadedImageName));
-                formData.append('client', '{$this->formName}');
-
+                formData.append('fileName', uploadedImageName);
+                
                 $.ajax('{$this->url}', {
                     method: \"POST\",
                     processData: false,

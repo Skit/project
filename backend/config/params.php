@@ -1,5 +1,5 @@
 <?php
-use blog\fileManager\entities\JpegSetUp;
+use blog\fileManager\entities\{ImagickSetUp, Dimension, Quality};
 use blog\fileManager\entities\Paths;
 
 return [
@@ -13,7 +13,8 @@ return [
             '@frontend/web'
         ),
         'patterns' => [
-            'imperavi' => new JpegSetUp(400, 280, 85, 1),
+            'post' => new ImagickSetUp('jpeg', new Dimension(400, 280),  new Quality()),
+            'imperavi' => new ImagickSetUp('jpeg', new Dimension(400, 280),  new Quality()),
         ],
     ]
 ];

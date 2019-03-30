@@ -167,21 +167,23 @@ class PostsController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        $file = UploadedFile::getInstanceByName('file');
+        if ($file = UploadedFile::getInstanceByName('file')) {
+            $model = new DynamicModel(compact('file'));
+            $model->addRule('file', 'image', ['skipOnEmpty' => false, 'extensions' => 'png, jpg'])->validate();
 
-        $model = new DynamicModel(compact('file'));
-        $model->addRule('file', 'image', ['skipOnEmpty' => false, 'extensions' => 'png, jpg'])->validate();
+            if($model->hasErrors()) {
+                // TODO imperavi не выдает это сообщение
+                return ['error' => $model->getFirstError('file')];
+            }
 
-        if($model->hasErrors()) {
-            // TODO imperavi не выдает это сообщение
-            return ['error' => $model->getFirstError('file')];
+            return $this->ImageManager->imperaviResize(
+                new Image($file->name, $file->tempName, $file->size, $file->type),
+                Yii::$app->params['resizer']['patterns']['imperavi'],
+                Yii::$app->params['resizer']['paths']
+            );
         }
 
-        return $this->ImageManager->imperaviResize(
-            new Image($file->name, $file->tempName, $file->size, $file->type),
-            Yii::$app->params['resizer']['patterns']['imperavi'],
-            Yii::$app->params['resizer']['paths']
-        );
+        return ['error' => 'empty file'];
     }
 
     /**

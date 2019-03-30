@@ -6,7 +6,7 @@ namespace blog\fileManager\transfers;
 
 class FileTransfer
 {
-    public function createDir($path, $mode = 0755, $recursive = false): bool
+    public function createDir(string $path, int $mode = 0755, bool $recursive = false): bool
     {
         if(! is_dir($path)) {
             if(! mkdir($path, $mode, $recursive)) {

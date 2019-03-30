@@ -26,6 +26,7 @@ class Image extends File
         $this->mimeType = $imageData['mime'];
         $this->width = $imageData[0];
         $this->height = $imageData[1];
+        $this->mimeType = $this->mimeType === '' ?: $imageData['mime'];
     }
 
     protected function scaleType(): void

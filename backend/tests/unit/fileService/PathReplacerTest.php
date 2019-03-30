@@ -96,4 +96,6 @@ class PathReplacerTest extends Unit
         $string = $this->service->pathReplacer('path/{:date}/{date}/{salt}', ['m', '{date}' => date('Y'), 'qwerty']);
         expect($string)->equals('path/' . date('Y'));
     }
+
+
 }

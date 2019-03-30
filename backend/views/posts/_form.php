@@ -13,6 +13,7 @@ use vova07\imperavi\Widget as Imperavi;
 /* @var $forms->PostsForm backend\models\Posts */
 /* @var $categories \common\services\forms\CategoriesService */
 /* @var $form yii\widgets\ActiveForm */
+
 ?>
     <div class="posts-form">
 
@@ -58,8 +59,10 @@ use vova07\imperavi\Widget as Imperavi;
         <div class="col-md-12">
             <div class="box box-default">
                 <div class="box-body">
+                    <?php $post = Yii::$app->params['resizer']['patterns']['post']->dimension; ?>
                     <?= $form->field($forms->PostsForm, 'image_url')->widget(Cropper::class, [
                         'cropperButtonId' => 'saveButton',
+                        'canvasSize' => ['width' => $post->width, 'height' => $post->height]
                     ])?>
                 </div>
             </div>

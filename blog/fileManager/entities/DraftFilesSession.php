@@ -61,7 +61,7 @@ class DraftFilesSession
 
     public function setPostCopy(string $draft, string $target)
     {
-        $this->sessionRestore($this->postKey, [$draft => $target]);
+        $this->session->set($this->postKey, [$draft => $target]);
     }
 
     private function sessionRestore(string $key, $data)

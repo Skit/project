@@ -3,9 +3,8 @@
 
 namespace blog\fileManager\managers;
 
-use blog\fileManager\entities\ImageFileSetUp;
-use blog\fileManager\entities\ImagickResult;
-use blog\fileManager\entities\JpegSetUp;
+use blog\fileManager\entities\Coords;
+use blog\fileManager\entities\ImagickSetUp;
 use blog\fileManager\source\Image;
 use Imagick;
 use ImagickPixel;
@@ -13,7 +12,7 @@ use ImagickPixel;
 /**
  * Class ImagickManager
  *
- * @property ImageFileSetUp $fileSetUp
+ * @property ImagickSetUp $setUp
  * @property Image $image
  *
  * @package blog\fileManager\services
@@ -23,7 +22,7 @@ class ImagickManager
     private
         $resizeWidth,
         $resizeHeight,
-        $fileSetUp,
+        $setUp,
         $image,
         $imagick;
 
@@ -42,11 +41,11 @@ class ImagickManager
         return $this;
     }
 
-    public function setUpJpeg(JpegSetUp $fileSetUp)
+    public function setUp(ImagickSetUp $imagickSetUp)
     {
-        $this->fileSetUp = $fileSetUp;
-        $this->_setFormat($fileSetUp->format);
-        $this->_setJpegQuality($fileSetUp);
+        $this->setUp = $imagickSetUp;
+        $this->_setFormat($imagickSetUp->format);
+        $this->_setJpegQuality($imagickSetUp);
 
         return $this;
     }
@@ -61,17 +60,33 @@ class ImagickManager
     public function freeResize()
     {
         if($this->image->scale === 'landscape'){
-            $resize_width = $this->image->width > $this->fileSetUp->width ? $this->fileSetUp->width : 0;
+            $resize_width = $this->image->width > $this->setUp->dimension->width ? $this->setUp->dimension->width : 0;
             $resize_height = 0;
         }
         else{
-            $resize_height = $this->image->height > $this->fileSetUp->height ? $this->fileSetUp->height : 0;
+            $resize_height = $this->image->height > $this->setUp->dimension->height ? $this->setUp->dimension->height : 0;
             $resize_width = 0;
         }
 
         if($resize_height || $resize_width) {
-            $this->_resize($resize_width, $resize_height, $this->fileSetUp->blur);
+            $this->_resize($resize_width, $resize_height, $this->setUp->quality->blur, $this->setUp->quality->bestfit);
         }
+
+        return $this;
+    }
+
+    public function resize()
+    {
+        $this->_resize($this->setUp->dimension->width, $this->setUp->dimension->height,
+            $this->setUp->quality->blur, $this->setUp->quality->bestfit);
+
+        return $this;
+    }
+
+    public function crop()
+    {
+        $this->imagick->cropImage($this->setUp->dimension->width, $this->setUp->dimension->height,
+            -$this->setUp->coords->left, -$this->setUp->coords->top);
 
         return $this;
     }
@@ -115,9 +130,15 @@ class ImagickManager
         return $this->resizeWidth;
     }
 
-    private function _resize(int $resize_width, int $resize_height, int $blur)
+    private function _crop(int $width, int $height, int $left, int $top)
     {
-        $this->imagick->resizeImage($resize_width, $resize_height, Imagick::FILTER_LANCZOS, $blur);
+        $this->imagick->cropImage($width, $height, $left, $top);
+        $this->_setNewSizes();
+    }
+
+    private function _resize(int $resize_width, int $resize_height, int $blur, bool $bestfit)
+    {
+        $this->imagick->resizeImage($resize_width, $resize_height, Imagick::FILTER_LANCZOS, $blur, $bestfit);
         $this->_setNewSizes();
     }
 
@@ -132,9 +153,9 @@ class ImagickManager
         $this->imagick->setFormat($format);
     }
 
-    private function _setJpegQuality(JpegSetUp $jpegSetUp)
+    private function _setJpegQuality(ImagickSetUp $imagickSetUp)
     {
         $this->imagick->setCompression(Imagick::COMPRESSION_JPEG);
-        $this->imagick->setImageCompressionQuality($jpegSetUp->quality);
+        $this->imagick->setImageCompressionQuality($imagickSetUp->quality->quality);
     }
 }
