@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "74d2428e4eb93ce3af9b8da9ab1105d3",
+    "content-hash": "684d397b219f9d39b9def037550a82ae",
     "packages": [
         {
             "name": "almasaeed2010/adminlte",
@@ -640,6 +640,55 @@
                 "yii2"
             ],
             "time": "2018-10-09T11:39:13+00:00"
+        },
+        {
+            "name": "nezhelskoy/yii2-highlight",
+            "version": "v1.2.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nezhelskoy/yii2-highlight.git",
+                "reference": "e5a6653f53e1d0105261c3ed6f4ee22662ba34a8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nezhelskoy/yii2-highlight/zipball/e5a6653f53e1d0105261c3ed6f4ee22662ba34a8",
+                "reference": "e5a6653f53e1d0105261c3ed6f4ee22662ba34a8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "yiisoft/yii2": "~2"
+            },
+            "type": "yii2-extension",
+            "extra": {
+                "asset-installer-paths": {
+                    "bower-asset-library": "vendor/bower"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "nezhelskoy\\highlight\\": "src/",
+                    "nezhelskoy\\highlight\\examples\\": "examples/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Dmitry A. Nezhelskoy",
+                    "email": "dmitry@nezhelskoy.pro",
+                    "homepage": "http://nezhelskoy.pro"
+                }
+            ],
+            "description": "Yii2 highlight.js extension",
+            "keywords": [
+                "highlight",
+                "highlight.js",
+                "yii2"
+            ],
+            "time": "2017-03-08T13:50:49+00:00"
         },
         {
             "name": "npm-asset/jquery",
@@ -3814,7 +3863,9 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.1"
+        "php": ">=7.1",
+        "ext-imagick": "*",
+        "ext-json": "*"
     },
     "platform-dev": []
 }

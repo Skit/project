@@ -6,7 +6,6 @@ use backend\behaviors\ImperaviBugFixBehavior;
 use backend\behaviors\MetaTagsBehavior;
 use backend\behaviors\PostTagsBehavior;
 use backend\behaviors\SaveDraftImagesBehavior;
-use backend\modules\resizer\behaviors\SaveUnSaveBehavior;
 use Yii;
 use yii\base\Model;
 use yii\behaviors\TimestampBehavior;
@@ -66,8 +65,6 @@ class Posts extends ActiveRecord
     {
         $post = new static();
         $post->setAttributes($form->getAttributes(), false);
-        $post->published_at = $post->published_at ? strtotime($post->published_at) : $post->touch('published_at');
-        $post->published_at += rand(300, 3000); // Handle publish imitation
         $post->creator_id = Yii::$app->user->identity->id;
 
         return $post;
@@ -80,8 +77,6 @@ class Posts extends ActiveRecord
     public static function edit(Model $form, self $post): void
     {
         $post->setAttributes($form->getAttributes(), false);
-        $post->published_at = $post->published_at ? strtotime($post->published_at) : time();
-        $post->published_at += rand(300, 1200); // Handle publish imitation
     }
 
     /**
@@ -116,6 +111,21 @@ class Posts extends ActiveRecord
         return $this->_unlinkTags;
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCategory(): ActiveQuery
+    {
+        return $this->hasOne(Categories::class, ['id' => 'category_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPostsTags(): ActiveQuery
+    {
+        return $this->hasMany(PostsTags::class, ['post_id' => 'id']);
+    }
 
     /**
      * {@inheritdoc}
@@ -132,18 +142,23 @@ class Posts extends ActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @param bool $insert
+     * @return bool
      */
-    public function getCategory(): ActiveQuery
+    public function beforeSave($insert)
     {
-        return $this->hasOne(Categories::class, ['id' => 'category_id']);
+        $publishedTime = $this->published_at ? strtotime($this->published_at) : time();
+        $this->setAttribute('published_at', $publishedTime + rand(300, 3000));
+        $this->setAttribute('is_highlight', $this->highlightCheck());
+
+        return parent::beforeSave($insert);
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPostsTags(): ActiveQuery
+    private function highlightCheck(): int
     {
-        return $this->hasMany(PostsTags::class, ['post_id' => 'id']);
+        return preg_match(
+            '~\<pre\>[\s\r\n]*\<code +class=(?:\"|\')[\w]+(?:\"|\') ?\>(.*)\<\/code\>[\s\r\n]*<\/pre\>~is',
+            $this->content
+        );
     }
 }

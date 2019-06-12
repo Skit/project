@@ -25,7 +25,8 @@
         "yiisoft/yii2-jui": "^2.0",
         "kartik-v/yii2-widget-datetimepicker": "*",
         "ext-imagick": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "nezhelskoy/yii2-highlight": "^1.2"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

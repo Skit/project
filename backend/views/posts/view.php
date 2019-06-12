@@ -9,11 +9,12 @@ use yii\widgets\DetailView;
 $this->title = $model->title;
 $this->params['breadcrumbs'][] = ['label' => 'Posts', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
+
+if ($model->is_highlight) {
+    nezhelskoy\highlight\HighlightAsset::register($this);
+}
 ?>
 <div class="posts-view">
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
     <p>
         <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
@@ -33,7 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'slug',
             'image_url:url',
             'video_url:url',
-            'content:ntext',
+            'content:html',
             'preview:ntext',
             'tags',
             'creator_id',
