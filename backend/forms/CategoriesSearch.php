@@ -2,7 +2,6 @@
 
 namespace backend\forms;
 
-use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use backend\models\Categories;
@@ -19,7 +18,7 @@ class CategoriesSearch extends Categories
     {
         return [
             [['id', 'creator_id', 'is_active'], 'integer'],
-            [['title', 'slug', 'description', 'meta_desc', 'meta_key', 'created_at', 'updated_at'], 'safe'],
+            [['title', 'slug', 'description', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -68,9 +67,7 @@ class CategoriesSearch extends Categories
 
         $query->andFilterWhere(['like', 'title', $this->title])
             ->andFilterWhere(['like', 'slug', $this->slug])
-            ->andFilterWhere(['like', 'description', $this->description])
-            ->andFilterWhere(['like', 'meta_desc', $this->meta_desc])
-            ->andFilterWhere(['like', 'meta_key', $this->meta_key]);
+            ->andFilterWhere(['like', 'description', $this->description]);
 
         return $dataProvider;
     }

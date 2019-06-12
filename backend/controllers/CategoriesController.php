@@ -3,18 +3,30 @@
 namespace backend\controllers;
 
 use backend\models\Categories;
+use blog\managers\FormsManager;
 use Yii;
 use backend\forms\CategoriesForm;
+use backend\forms\MetaTagsForm;
 use backend\forms\CategoriesSearch;
-use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
  * CategoriesController implements the CRUD actions for Categories model.
+ *
+ * @property FormsManager $FormsManager
  */
 class CategoriesController extends Controller
 {
+
+    public function __construct($id, $module, FormsManager $formsManager, $config = [])
+    {
+        parent::__construct(func_get_args(), $id, $module, $config);
+
+        $this->FormsManager
+            ->mergeForm(new CategoriesForm())
+            ->with(new MetaTagsForm());
+    }
     /**
      * {@inheritdoc}
      */
@@ -65,19 +77,14 @@ class CategoriesController extends Controller
      */
     public function actionCreate()
     {
-        $form = new CategoriesForm();
+        if ($this->FormsManager->loadPost() && $this->FormsManager->validate() && $this->FormsManager->mergeData()) {
+            $form = $this->FormsManager->getMainForm();
 
-        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
-
-            $model = new Categories();
-            $model->setAttributes($form->getAttributes(), false);
-            $model->save();
-
-            return $this->redirect(['view', 'id' => $model->id]);
+            //return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('create', [
-            'model' => $form,
+            'forms' => $this->FormsManager->getForms(),
         ]);
     }
 
@@ -90,14 +97,16 @@ class CategoriesController extends Controller
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
+        $this->FormsManager->fillForms($this->findModel($id));
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($this->FormsManager->loadPost() && $this->FormsManager->validate() && $this->FormsManager->mergeData()) {
+            $form = $this->FormsManager->getMainForm();
+            //$this->CategoryManager->edit($form);
+            //return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('update', [
-            'model' => $model,
+            'forms' => $this->FormsManager->getForms(),
         ]);
     }
 

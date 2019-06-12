@@ -22,7 +22,10 @@ class MetaTagsForm extends FormsManager
 
     public function replaceAttributes(): array
     {
-        return [PostsForm::class => ['meta_tags' => $this]];
+        return [
+            PostsForm::class => ['meta_tags' => $this],
+            CategoriesForm::class => ['meta_tags' => $this],
+        ];
     }
 
     public function setMeta_tags(MetaTags $data)

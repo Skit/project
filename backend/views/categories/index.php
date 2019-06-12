@@ -12,7 +12,6 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="categories-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
@@ -29,8 +28,6 @@ $this->params['breadcrumbs'][] = $this->title;
             'title',
             'slug',
             'description:ntext',
-            'meta_desc',
-            //'meta_key',
             //'creator_id',
             //'created_at',
             //'updated_at',

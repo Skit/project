@@ -2,9 +2,7 @@
 
 namespace backend\models;
 
-use common\components\behaviors\TimestampBehavior;
-use Yii;
-use yii\db\Expression;
+use backend\behaviors\MetaTagsBehavior;
 
 /**
  * This is the model class for table "{{%categories}}".
@@ -56,5 +54,16 @@ class Categories extends \yii\db\ActiveRecord
     public function getPosts()
     {
         return $this->hasMany(Posts::class, ['category_id' => 'id']);
+    }
+
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors(): array
+    {
+        return [
+            MetaTagsBehavior::class,
+        ];
     }
 }
