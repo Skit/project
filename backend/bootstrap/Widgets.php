@@ -29,7 +29,8 @@ class Widgets implements BootstrapInterface
                     'fullscreen',
                     'imagemanager',
                     'counter'
-                ]
+                ],
+                'imageUploadErrorCallback' => new JsExpression('function(json){ alert(json.error); }')
             ]
         ]);
 

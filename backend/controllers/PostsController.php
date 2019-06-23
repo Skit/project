@@ -172,7 +172,6 @@ class PostsController extends Controller
             $model->addRule('file', 'image', ['skipOnEmpty' => false, 'extensions' => 'png, jpg'])->validate();
 
             if($model->hasErrors()) {
-                // TODO imperavi не выдает это сообщение
                 return ['error' => $model->getFirstError('file')];
             }
 
