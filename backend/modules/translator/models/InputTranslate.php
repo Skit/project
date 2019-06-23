@@ -20,7 +20,7 @@ class InputTranslate
     {
         $this->settings = include dirname(__DIR__) .DS .'config' .DS .'main-local.php';
         $this->str = urlencode(
-            preg_replace('~[^\w ]~u', '', $str)
+            preg_replace('~[^\w ]~u', '', trim($str))
         );
         //$url = "http://mymemory.translated.net/api/get?q={$this->str}&langpair={$from}|{$to}";
         $this->url = "https://translate.yandex.net/api/v1.5/tr.json/translate";
@@ -29,11 +29,17 @@ class InputTranslate
         return $this;
     }
 
+    public function getSlug()
+    {
+        $translate = strtolower($this->getTranslate());
+        return preg_replace('~\s~', '_', $translate);
+    }
+
     /**
      * @return string
      * @throws \ErrorException
      */
-    public function getEn(): string
+    public function getTranslate(): string
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url);
@@ -52,9 +58,6 @@ class InputTranslate
             throw new \ErrorException('Request error!', 400);
         }
 
-        return strtolower(
-            json_decode($result)->text[0]
-        );
-
+        return json_decode($result)->text[0];
     }
 }

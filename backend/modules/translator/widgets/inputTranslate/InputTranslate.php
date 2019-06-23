@@ -40,7 +40,7 @@ class InputTranslate extends InputWidget
          * URL translate action
          * @var string
          */
-        $url = '/translator/online-translate',
+        $url = '/translator/online-translate/get-slug',
         /**
          * Ajax loader image
          * @var string

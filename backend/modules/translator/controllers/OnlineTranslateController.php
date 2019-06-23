@@ -2,6 +2,7 @@
 
 namespace backend\modules\translator\controllers;
 
+use yii;
 use backend\modules\translator\models\InputTranslate;
 use yii\web\Controller;
 use yii\web\HttpException;
@@ -23,6 +24,21 @@ class OnlineTranslateController extends Controller
             throw new HttpException(500);
         }
 
-        return (new InputTranslate($str))->getEn();
+        return (new InputTranslate($str))->getTranslate();
+    }
+
+    /**
+     * @return string|string[]|null
+     * @throws HttpException
+     */
+    public function actionGetSlug()
+    {
+        $request = Yii::$app->request;
+
+        if(!$request->isAjax || !($str = $request->post('str'))){
+            throw new HttpException(500);
+        }
+
+        return (new InputTranslate($str))->getSlug();
     }
 }
