@@ -3,6 +3,10 @@
 namespace backend\models;
 
 use backend\behaviors\MetaTagsBehavior;
+use Yii;
+use yii\base\Model;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "{{%categories}}".
@@ -20,32 +24,43 @@ use backend\behaviors\MetaTagsBehavior;
  *
  * @property Posts[] $posts
  */
-class Categories extends \yii\db\ActiveRecord
+class Categories extends ActiveRecord
 {
-    public const IS_ACTIVE = 1;
-
-    /**
-     * @param string $title
-     * @return bool
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
-     */
-    public static function deleteByTitle(string $title): bool
-    {
-        $category = self::find()
-            ->where(['title' => $title])
-            ->limit(1)
-            ->one();
-
-        return $category->delete() > 0 ? true : false;
-    }
-
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
         return '{{%categories}}';
+    }
+
+    public static function create(Model $form)
+    {
+        $category = new static();
+        $category->setAttributes($form->getAttributes(), false);
+        $category->creator_id = Yii::$app->user->identity->id;
+
+        return $category;
+    }
+
+    /**
+     * @param Model $form
+     * @param self $post
+     */
+    public static function edit(Model $form, self $categoty): void
+    {
+        $categoty->setAttributes($form->getAttributes(), false);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors(): array
+    {
+        return [
+            TimestampBehavior::class,
+            MetaTagsBehavior::class,
+        ];
     }
 
     /**
@@ -57,13 +72,4 @@ class Categories extends \yii\db\ActiveRecord
     }
 
 
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors(): array
-    {
-        return [
-            MetaTagsBehavior::class,
-        ];
-    }
 }

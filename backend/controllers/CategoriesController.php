@@ -3,6 +3,7 @@
 namespace backend\controllers;
 
 use backend\models\Categories;
+use blog\managers\CategoryManager;
 use blog\managers\FormsManager;
 use Yii;
 use backend\forms\CategoriesForm;
@@ -15,11 +16,12 @@ use yii\filters\VerbFilter;
  * CategoriesController implements the CRUD actions for Categories model.
  *
  * @property FormsManager $FormsManager
+ * @property CategoryManager $CategoryManager
  */
 class CategoriesController extends Controller
 {
 
-    public function __construct($id, $module, FormsManager $formsManager, $config = [])
+    public function __construct($id, $module, FormsManager $formsManager, CategoryManager $categoryManager, $config = [])
     {
         parent::__construct(func_get_args(), $id, $module, $config);
 
@@ -34,7 +36,7 @@ class CategoriesController extends Controller
     {
         return [
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['POST'],
                 ],
@@ -79,8 +81,9 @@ class CategoriesController extends Controller
     {
         if ($this->FormsManager->loadPost() && $this->FormsManager->validate() && $this->FormsManager->mergeData()) {
             $form = $this->FormsManager->getMainForm();
+            $category = $this->CategoryManager->create($form);
 
-            //return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['view', 'id' => $category->id]);
         }
 
         return $this->render('create', [
@@ -101,8 +104,9 @@ class CategoriesController extends Controller
 
         if ($this->FormsManager->loadPost() && $this->FormsManager->validate() && $this->FormsManager->mergeData()) {
             $form = $this->FormsManager->getMainForm();
-            //$this->CategoryManager->edit($form);
-            //return $this->redirect(['view', 'id' => $model->id]);
+            $category = $this->CategoryManager->edit($form);
+
+            return $this->redirect(['view', 'id' => $category->id]);
         }
 
         return $this->render('update', [
