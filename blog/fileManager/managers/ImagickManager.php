@@ -3,73 +3,98 @@
 
 namespace blog\fileManager\managers;
 
-use blog\fileManager\entities\Coords;
+use blog\fileManager\entities\formats\ImagickAbstract;
+use blog\fileManager\entities\formats\ImagickFormat;
+use blog\fileManager\entities\ImagickResult;
 use blog\fileManager\entities\ImagickSetUp;
 use blog\fileManager\source\Image;
-use Imagick;
-use ImagickPixel;
 
 /**
  * Class ImagickManager
  *
  * @property ImagickSetUp $setUp
  * @property Image $image
+ * @property ImagickAbstract $format
+ * @property ImagickFormat $formatObject
+ * @property ImagickResult $result
  *
  * @package blog\fileManager\services
  */
 class ImagickManager
 {
     private
-        $resizeWidth,
-        $resizeHeight,
+        $result,
         $setUp,
         $image,
-        $imagick;
+        $formatObject,
+        $format;
 
-    public function __construct(Imagick $imagick)
+    /**
+     * ImagickManager constructor.
+     * @param ImagickFormat $imagickFormat
+     * @param ImagickResult $imagickResult
+     */
+    public function __construct(ImagickFormat $imagickFormat, ImagickResult $imagickResult)
     {
-        $this->imagick = $imagick;
-
-        return $this;
+        $this->formatObject = $imagickFormat;
+        $this->result = $imagickResult;
     }
 
-    public function setOrigin(Image $image)
-    {
-        $this->image = $image;
-        $this->imagick->readImage($image->tmpPath);
-
-        return $this;
-    }
-
-    public function setUp(ImagickSetUp $imagickSetUp)
+    /**
+     * @param ImagickSetUp $imagickSetUp
+     * @param Image $image
+     * @return $this
+     * @throws \ImagickException
+     * @throws \yii\db\Exception
+     */
+    public function init(ImagickSetUp $imagickSetUp, Image $image)
     {
         $this->setUp = $imagickSetUp;
-        $this->_setFormat($imagickSetUp->format);
-        $this->_setJpegQuality($imagickSetUp);
+        $this->image = $image;
+        $this->formatObject->determine($image->extension);
+
+        $this->format = $this->formatObject->get();
+        $this->format->readImage($image->tmpPath);
+        $this->format->setSetUp($this->setUp);
 
         return $this;
     }
 
-    public function createNew(string $format, string $with, string $height, string $pixel = 'white')
+    /**
+     * @return ImagickResult
+     */
+    public function getResult(): ImagickResult
     {
-        $this->imagick->newImage($with, $height, new ImagickPixel($pixel));
-        $this->imagick->setImageFormat($format);
-        $this->_setNewSizes();
+        return $this->result;
+    }
+
+    /**
+     * @param string $format
+     * @param string $with
+     * @param string $height
+     */
+    public function createNew(string $format, string $with, string $height)
+    {
+        // FIXME test uses this method
+        $this->format->createNew($with, $height);
+        //$this->imagick->setImageFormat($format);
     }
 
     public function freeResize()
     {
-        if($this->image->scale === 'landscape'){
+        if ($this->image->scale === 'landscape') {
             $resize_width = $this->image->width > $this->setUp->dimension->width ? $this->setUp->dimension->width : 0;
             $resize_height = 0;
         }
-        else{
+        else {
             $resize_height = $this->image->height > $this->setUp->dimension->height ? $this->setUp->dimension->height : 0;
             $resize_width = 0;
         }
 
-        if($resize_height || $resize_width) {
-            $this->_resize($resize_width, $resize_height, $this->setUp->quality->blur, $this->setUp->quality->bestfit);
+        if ($resize_height || $resize_width) {
+            $this->format->resize($resize_width, $resize_height);
+            $this->result->setNewWidth($this->format->getWidth());
+            $this->result->setNewHeight($this->format->getHeight());
         }
 
         return $this;
@@ -77,85 +102,34 @@ class ImagickManager
 
     public function resize()
     {
-        $this->_resize($this->setUp->dimension->width, $this->setUp->dimension->height,
-            $this->setUp->quality->blur, $this->setUp->quality->bestfit);
+        $this->format->resize($this->setUp->dimension->width, $this->setUp->dimension->height);
 
         return $this;
     }
 
     public function crop()
     {
-        $this->imagick->cropImage($this->setUp->dimension->width, $this->setUp->dimension->height,
-            -$this->setUp->coords->left, -$this->setUp->coords->top);
+        // FIXME
+        /*$this->imagick->cropImage($this->setUp->dimension->width, $this->setUp->dimension->height,
+            -$this->setUp->coords->left, -$this->setUp->coords->top);*/
 
         return $this;
     }
 
-    public function save(string $path): bool
+    /**
+     * @param string $path
+     * @return ImagickManager
+     * @throws \yii\base\Exception
+     */
+    public function save(string $path): self
     {
-        $result = $this->write($path);
-        $this->clear();
-
-        return $result;
-    }
-
-    public function write(string $path): bool
-    {
-        return $this->imagick->writeImage($path);
-    }
-
-    public function clear(): bool
-    {
-        return $this->imagick->clear();
-    }
-
-    public function strip()
-    {
-        $profiles = $this->imagick->getImageProfiles("icc", true);
-        $this->imagick->stripImage();
-
-        if(! empty($profiles))
-            $this->imagick->profileImage("icc", $profiles['icc']);
-
+        $this->result->setResult($this->format->write($path));
         return $this;
     }
 
-    public function getHeight()
-    {
-        return $this->resizeHeight;
-    }
-
-    public function getWidth()
-    {
-        return $this->resizeWidth;
-    }
-
+    // FIXME
     private function _crop(int $width, int $height, int $left, int $top)
     {
-        $this->imagick->cropImage($width, $height, $left, $top);
-        $this->_setNewSizes();
-    }
-
-    private function _resize(int $resize_width, int $resize_height, int $blur, bool $bestfit)
-    {
-        $this->imagick->resizeImage($resize_width, $resize_height, Imagick::FILTER_LANCZOS, $blur, $bestfit);
-        $this->_setNewSizes();
-    }
-
-    private function _setNewSizes()
-    {
-        $this->resizeHeight = $this->imagick->getImageHeight();
-        $this->resizeWidth = $this->imagick->getImageWidth();
-    }
-
-    private function _setFormat(string $format)
-    {
-        $this->imagick->setFormat($format);
-    }
-
-    private function _setJpegQuality(ImagickSetUp $imagickSetUp)
-    {
-        $this->imagick->setCompression(Imagick::COMPRESSION_JPEG);
-        $this->imagick->setImageCompressionQuality($imagickSetUp->quality->quality);
+        //$this->imagick->cropImage($width, $height, $left, $top);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace backend\controllers;
 
+use blog\fileManager\entities\Path;
 use blog\fileManager\services\FileService;
 use Yii;
 use blog\managers\{PostManager, TagsManager, FormsManager};
@@ -175,11 +176,17 @@ class PostsController extends Controller
                 return ['error' => $model->getFirstError('file')];
             }
 
-            return $this->ImageManager->imperaviResize(
+            /* @var Path $result */
+            $paths = $this->ImageManager->imperaviResize(
                 new Image($file->name, $file->tempName, $file->size, $file->type),
                 Yii::$app->params['resizer']['patterns']['imperavi'],
                 Yii::$app->params['resizer']['paths']
             );
+
+            return [
+                'filelink' => $paths->getDraftSave()->getSiteUrl(),
+                'filename' => $paths->getSave()->fileName(),
+            ];
         }
 
         return ['error' => 'empty file'];

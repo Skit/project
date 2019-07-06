@@ -3,14 +3,14 @@
 namespace backend\bootstrap;
 
 use blog\fileManager\entities\DraftFilesSession;
-use blog\fileManager\entities\JpegSetUp;
-use blog\fileManager\ImageManager;
+use blog\fileManager\entities\formats\ImagickFormat;
+use blog\fileManager\entities\ImagickResult;
 use blog\fileManager\managers\ImagickManager;
 use blog\fileManager\services\FileService;
-use blog\fileManager\transfers\FileTransfer;
 use blog\managers\TagsManager;
 use blog\services\TagService;
 use blog\transfers\TagTransfer;
+use Imagick;
 use Yii;
 use yii\base\BootstrapInterface;
 use yii\web\Session;
@@ -28,7 +28,7 @@ class Inject implements BootstrapInterface
 
         $container->setSingleton(ImagickManager::class, function (): ImagickManager
         {
-            return new ImagickManager(new \Imagick());
+            return new ImagickManager(new ImagickFormat(new Imagick()), new ImagickResult());
         });
 
         $container->setSingleton(DraftFilesSession::class, function (): DraftFilesSession

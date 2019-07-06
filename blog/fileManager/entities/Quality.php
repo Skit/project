@@ -9,7 +9,7 @@ class Quality
     /**
      * @var int
      */
-    public $quality;
+    public $value;
     /**
      * @var float
      */
@@ -19,9 +19,9 @@ class Quality
      */
     public $bestfit;
 
-    public function __construct(int $quality = 85, float $blur = 1, bool $bestfit = false)
+    public function __construct(int $value, float $blur = 1, bool $bestfit = false)
     {
-        $this->quality = $quality;
+        $this->value = $value;
         $this->blur = $blur;
         $this->bestfit = $bestfit;
     }

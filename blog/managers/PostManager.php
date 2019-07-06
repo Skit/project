@@ -6,6 +6,7 @@ namespace blog\managers;
 use backend\forms\PostsForm;
 use backend\models\Posts;
 use blog\transfers\PostTransfer;
+use yii\base\Model;
 
 class PostManager
 {
@@ -31,7 +32,7 @@ class PostManager
 
     /**
      * @param PostsForm $forms
-     * @return Posts
+     * @return Posts|Model
      */
     public function create(PostsForm $forms): Posts
     {
@@ -47,7 +48,7 @@ class PostManager
     }
 
     /**
-     * @param PostsForm $forms
+     * @param PostsForm|Model $forms
      */
     public function edit(PostsForm $forms)
     {

@@ -20,15 +20,21 @@ class ImagickSetUp
          */
         $dimension,
         /**
+         * Target format
          * @var string
          */
-        $format;
+        $format,
+        /**
+         * @var bool
+         */
+        $strip;
 
-    public function __construct(string $format, Dimension $dimension, Quality $quality)
+    public function __construct(string $format, Dimension $dimension, Quality $quality, bool $strip)
     {
         $this->format = $format;
         $this->dimension = $dimension;
         $this->quality = $quality;
+        $this->strip = $strip;
     }
 
     public function setDimension(Dimension $dimension)

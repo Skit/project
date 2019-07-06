@@ -13,8 +13,8 @@ return [
             '@frontend/web'
         ),
         'patterns' => [
-            'post' => new ImagickSetUp('jpeg', new Dimension(400, 280),  new Quality()),
-            'imperavi' => new ImagickSetUp('jpeg', new Dimension(400, 280),  new Quality()),
+            'post' => new ImagickSetUp('jpeg', new Dimension(400, 280),  new Quality(85), true),
+            'imperavi' => new ImagickSetUp('jpeg', new Dimension(400, 280),  new Quality(85), true),
         ],
     ]
 ];

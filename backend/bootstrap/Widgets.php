@@ -30,7 +30,7 @@ class Widgets implements BootstrapInterface
                     'imagemanager',
                     'counter'
                 ],
-                'imageUploadErrorCallback' => new JsExpression('function(json){ alert(json.error); }')
+            'imageUploadErrorCallback' => new JsExpression('function(json){ alert(json.error); }')
             ]
         ]);
 
