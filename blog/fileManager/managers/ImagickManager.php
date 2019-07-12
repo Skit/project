@@ -80,7 +80,7 @@ class ImagickManager
         //$this->imagick->setImageFormat($format);
     }
 
-    public function freeResize()
+    public function freeResize(): self
     {
         if ($this->image->scale === 'landscape') {
             $resize_width = $this->image->width > $this->setUp->dimension->width ? $this->setUp->dimension->width : 0;
@@ -93,25 +93,25 @@ class ImagickManager
 
         if ($resize_height || $resize_width) {
             $this->format->resize($resize_width, $resize_height);
-            $this->result->setNewWidth($this->format->getWidth());
-            $this->result->setNewHeight($this->format->getHeight());
         }
+        $this->_setNewSize();
 
         return $this;
     }
 
-    public function resize()
+    public function resize(): self
     {
         $this->format->resize($this->setUp->dimension->width, $this->setUp->dimension->height);
+        $this->_setNewSize();
 
         return $this;
     }
 
-    public function crop()
+    public function crop(): self
     {
-        // FIXME
-        /*$this->imagick->cropImage($this->setUp->dimension->width, $this->setUp->dimension->height,
-            -$this->setUp->coords->left, -$this->setUp->coords->top);*/
+        $this->format->crop($this->setUp->dimension->width, $this->setUp->dimension->height,
+            -$this->setUp->coords->left, -$this->setUp->coords->top);
+        $this->_setNewSize();
 
         return $this;
     }
@@ -127,9 +127,9 @@ class ImagickManager
         return $this;
     }
 
-    // FIXME
-    private function _crop(int $width, int $height, int $left, int $top)
+    private function _setNewSize(): void
     {
-        //$this->imagick->cropImage($width, $height, $left, $top);
+        $this->result->setNewWidth($this->format->getWidth());
+        $this->result->setNewHeight($this->format->getHeight());
     }
 }

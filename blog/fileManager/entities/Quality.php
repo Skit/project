@@ -19,7 +19,7 @@ class Quality
      */
     public $bestfit;
 
-    public function __construct(int $value, float $blur = 1, bool $bestfit = false)
+    public function __construct(int $value = 85, float $blur = 1, bool $bestfit = false)
     {
         $this->value = $value;
         $this->blur = $blur;

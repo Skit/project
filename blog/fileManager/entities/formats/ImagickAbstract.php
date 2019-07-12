@@ -88,10 +88,21 @@ Abstract class ImagickAbstract
     /**
      * @param int $width
      * @param int $height
-     * @param ImagickSetUp $imagickSetUp
      */
     public function resize(int $width, int $height)
     {
+        $this->afterChange();
+    }
+
+    /**
+     * @param int $width
+     * @param int $height
+     * @param int $x
+     * @param int $y
+     */
+    public function crop(int $width, int $height, int $x, int $y)
+    {
+        $this->imagick->cropImage($width, $height, $x, $y);
         $this->afterChange();
     }
 

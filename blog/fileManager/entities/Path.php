@@ -3,50 +3,123 @@
 
 namespace blog\fileManager\entities;
 
-use blog\fileManager\services\FileService;
 use Yii;
 
-class Path
-{
-    /**
-     * @var string
-     */
-    private $path;
+class Path {
+
+    private
+        /**
+         * Path after replace
+         * @var string
+         */
+        $_replaced,
+        /**
+         * Path after changes
+         * @var string
+         */
+        $_result,
+        /**
+         * Raw path from constructor
+         * @var string
+         */
+        $_path;
 
     public function __construct(string $path)
     {
-        $this->path = $path;
+        $this->_result = $this->_path = $path;
     }
 
-    public function raw(): string
+    public function getRaw(): string
     {
-        return $this->path;
+        return $this->_path;
     }
 
-    public function convertAlias(): string
+    public function getPath(): string
     {
-        return Yii::getAlias($this->raw());
+        return $this->_result;
     }
 
-    public function replacer(array $replaceData = []): string
+    public function getUrl(): string
     {
-        return Yii::$container->invoke(function($path, FileService $service) use ($replaceData) {
-            return $service->pathReplacer($path, $replaceData);
-        }, ['path' => $this->path]);
+        return  Yii::$app->params['baseUrl'] . "/{$this->getReplaced()}";
     }
 
-    public function getSiteUrl()
+    public function convertAlias(): self
     {
-        return Yii::$app->params['baseUrl'] . '/' . $this->raw();
+        $this->_result = Yii::getAlias($this->_result);
+        return $this;
+    }
+
+    public function getReplaced()
+    {
+        return $this->_replaced;
+    }
+
+    /**
+     * @param string $path
+     * @param string $place before path if ^ else or $ string will be concatenates after path
+     * @return Path
+     */
+    public function concat(string $path, string $place = '^'): self
+    {
+        $this->_result = $place === '^' ? "{$path}/{$this->_result}" : "{$this->_result}/{$path}";
+        return $this;
+    }
+
+    /**
+     * @param array $replaceData
+     * @return self
+     */
+    public function replacer(array $replaceData = []): self
+    {
+        if (preg_match_all('~{[^\{\}]+}~', $this->_path, $variables)) {
+            foreach ($variables[0] as $variable) {
+
+                if (strpos($variable, ':')) {
+
+                    if (preg_match('~\{\:(?<function>[^\[\]]+)(?:\[(?<params>.*)\])?}~', $variable, $matches)) {
+                        switch ($matches['function']) {
+                            case 'date':
+                                if (! empty($matches['params'])) {
+                                    $replace = date(str_replace('\\', '/', $matches['params']));
+                                }
+                                break;
+                            case 'salt':
+                                $length = empty($matches['params']) ? 6 : $matches['params'];
+                                $replace = substr(md5(time()), 0, $length);
+                                break;
+                            case 'time':
+                                $replace = time();
+                                break;
+                        }
+                    }
+                } else {
+                    $replace = $replaceData[$variable] ?? '';
+                }
+
+                $this->_replaced = $this->_result = str_replace($variable, $replace ?? '', $this->_result);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return self
+     */
+    public function normalizePath(): self
+    {
+        $this->_result = str_replace(['//', '\\'], ['/', '/'], rtrim($this->_result, '/'));
+        return $this;
     }
 
     public function getDir(): string
     {
-        return rtrim(str_replace($this->fileName(), '', $this->path), '/');
+        return rtrim(str_replace($this->getFileName(), '', $this->_result), '/');
     }
 
-    public function fileName(): string
+    public function getFileName(): string
     {
-        return basename($this->path);
+        return basename($this->_result);
     }
 }

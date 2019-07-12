@@ -15,7 +15,7 @@ class Dimension
      */
     public $height;
 
-    public function __construct(int $width, int $height)
+    public function __construct(int $width = 0, int $height = 0)
     {
         $this->width = $width;
         $this->height = $height;

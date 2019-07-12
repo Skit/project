@@ -6,10 +6,11 @@ namespace blog\fileManager;
 
 use blog\fileManager\entities\DraftFilesSession;
 use blog\fileManager\entities\ImagickSetUp;
-use blog\fileManager\entities\Paths;
+use blog\fileManager\entities\Path;
 use blog\fileManager\managers\ImagickManager;
 use blog\fileManager\source\Image;
 use blog\fileManager\transfers\FileTransfer;
+use yii\base\Exception;
 
 class ImageManager
 {
@@ -36,78 +37,115 @@ class ImageManager
         $this->draftFilesSession = $draftFilesSession;
     }
 
-    public function imperaviResize(Image $image, ImagickSetUp $imagickSetUp, Paths $paths)
+    /**
+     * @param Image $image
+     * @param ImagickSetUp $imagickSetUp
+     * @param Path []$paths
+     * @return array|string
+     * @throws \ImagickException
+     */
+    public function imperaviResize(Image $image, ImagickSetUp $imagickSetUp, array $paths)
     {
-        $resizer = $this->imagickManager
-            ->init($imagickSetUp, $image)
-            // FIXME it resize original too
-            ->freeResize();
+        try {
+            $resizer = $this->imagickManager
+                ->init($imagickSetUp, $image)
+                // FIXME it resize original too
+                ->freeResize();
 
-        $paths->replaceSave([
-            '{width}' => $resizer->getResult()->getNewWidth(),
-            '{height}' => $resizer->getResult()->getNewHeight(),
-            '{format}' => $imagickSetUp->format
-        ]);
-        $paths->replaceDraftSave([
-            '{format}' => $imagickSetUp->format
-        ]);
-        $paths->replaceOriginal([
-            '{width}' => $image->width,
-            '{height}' => $image->height,
-            '{format}' => $image->extension
-        ]);
-        $paths->replaceDraftOriginal([
-            '{format}' => $image->extension
-        ]);
+            $paths['saveDraft']->replacer(['{format}' => $imagickSetUp->format]);
+            $paths['save']->replacer([
+                '{width}' => $resizer->getResult()->getNewWidth(),
+                '{height}' => $resizer->getResult()->getNewHeight(),
+                '{format}' => $imagickSetUp->format
+            ]);
 
-        $this->fileTransfer->createDir($paths->getAbsoluteDraftDir(), 0755, true);
-        $this->fileTransfer->createDir($paths->getAbsoluteSaveDir(), 0755, true);
-        $this->fileTransfer->createDir($paths->getOriginalDraftDir(), 0755, true);
-        $this->fileTransfer->copy($image->tmpPath, $paths->getOriginalDraft());
+            $paths['originalDraft']->replacer(['{format}' => $image->extension]);
+            $paths['original']->replacer([
+                '{width}' => $image->width,
+                '{height}' => $image->height,
+                '{format}' => $image->extension
+            ]);
 
-        $this->draftFilesSession->setOriginalCopy($paths->getOriginalDraft(), $paths->getAbsoluteOriginal());
-        $this->draftFilesSession->setContentCopy($paths->getAbsoluteDraft(), $paths->getAbsoluteSave());
-        $this->draftFilesSession->setContentReplace($paths->getDraftSave()->getSiteUrl(), $paths->getSave()->getSiteUrl());
+            $uploadDir = $paths['uploadDir']->getRaw();
+            $originalDraft = $paths['originalDraft']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($originalDraft->getDir(), 0755, true);
+            $this->fileTransfer->copy($image->tmpPath, $originalDraft->getPath());
 
-        $resizer->save($paths->getAbsoluteDraft());
+            $original = $paths['original']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($original->getDir(), 0755, true);
+            $this->draftFilesSession->setOriginalCopy($originalDraft->getPath(), $original->getPath());
+
+            $saveDraft = $paths['saveDraft']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($saveDraft->getDir(), 0755, true);
+
+            $save = $paths['save']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($save->getDir(), 0755, true);
+
+            $this->draftFilesSession->setContentCopy($saveDraft->getPath(), $save->getPath());
+            $this->draftFilesSession->setContentReplace($saveDraft->getUrl(), $save->getUrl());
+
+            $resizer->save($saveDraft->getPath());
+        } catch (Exception $e) {
+            $this->draftFilesSession->flushCache();
+            return $e->getMessage();
+        }
 
         return $paths;
     }
 
-    public function postImageResize(Image $image, ImagickSetUp $imagickSetUp, Paths $paths)
+    /**
+     * @param Image $image
+     * @param ImagickSetUp $imagickSetUp
+     * // TODO записать в блог как сделать автодополнение для массива объектов
+     * @param Path []$paths
+     * @return mixed
+     * @throws \ImagickException
+     * @throws \yii\base\Exception
+     * @throws \yii\db\Exception
+     */
+    public function postImageResize(Image $image, ImagickSetUp $imagickSetUp, array $paths)
     {
-        $resizer = $this->imagickManager
-            ->init($imagickSetUp, $image)
-            ->resize()
-            ->crop();
+        try {
+            $resizer = $this->imagickManager
+                ->init($imagickSetUp, $image)
+                ->crop()
+                ->resize();
 
-        // FIXME $resizer->getWidth() && $resizer->getHeight() are not found
-        $paths->replaceSave([
-            '{width}' => $resizer->getWidth(),
-            '{height}' => $resizer->getHeight(),
-            '{format}' => $imagickSetUp->format
-        ]);
-        $paths->replaceDraftSave([
-            '{format}' => $image->extension
-        ]);
-        $paths->replaceOriginal([
-            '{width}' => $image->width,
-            '{height}' => $image->height,
-            '{format}' => $image->extension
-        ]);
-        $paths->replaceDraftOriginal([
-            '{format}' => $image->extension
-        ]);
+            $paths['saveDraft']->replacer(['{format}' => $image->extension]);
+            $paths['save']->replacer([
+                '{width}' => $resizer->getResult()->getNewWidth(),
+                '{height}' => $resizer->getResult()->getNewHeight(),
+                '{format}' => $imagickSetUp->format
+            ]);
 
-        $this->fileTransfer->copy($image->tmpPath, $paths->getOriginalDraft());
-        $this->fileTransfer->createDir($paths->getAbsoluteDraftDir(), 0755, true);
-        $this->fileTransfer->createDir($paths->getOriginalDraftDir(), 0755, true);
-        $this->fileTransfer->createDir($paths->getAbsoluteSaveDir(), 0755, true);
-        $this->draftFilesSession->setOriginalCopy($paths->getOriginalDraft(), $paths->getAbsoluteOriginal());
-        $this->draftFilesSession->setPostCopy($paths->getAbsoluteDraft(), $paths->getAbsoluteSave());
+            $paths['originalDraft']->replacer(['{format}' => $image->extension]);
+            $paths['original']->replacer([
+                '{width}' => $image->width,
+                '{height}' => $image->height,
+                '{format}' => $image->extension
+            ]);
 
-        $resizer->save($paths->getAbsoluteDraft());
+            $uploadDir = $paths['uploadDir']->getRaw();
+            $originalDraft = $paths['originalDraft']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($originalDraft->getDir(), 0755, true);
+            $this->fileTransfer->copy($image->tmpPath, $originalDraft->getPath());
 
-        return $paths->getOriginal()->raw();
+            $original = $paths['original']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($original->getDir(), 0755, true);
+            $this->draftFilesSession->setOriginalCopy($originalDraft->getPath(), $original->getPath());
+
+            $saveDraft = $paths['saveDraft']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($saveDraft->getDir(), 0755, true);
+            $resizer->save($saveDraft->getPath());
+
+            $save = $paths['save']->concat($uploadDir)->convertAlias()->normalizePath();
+            $this->fileTransfer->createDir($save->getDir(), 0755, true);
+            $this->draftFilesSession->setPostCopy($saveDraft->getPath(), $save->getPath());
+        } catch (Exception $e) {
+            $this->draftFilesSession->flushCache();
+            return $e->getMessage();
+        }
+
+        return $save->getUrl();
     }
 }

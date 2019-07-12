@@ -18,19 +18,25 @@ class Image extends File
 
         $this->dimensions();
         $this->scaleType();
+        $this->mimeType();
     }
 
     protected function dimensions(): void
     {
         $imageData = getimagesize($this->tmpPath);
-        $this->mimeType = $imageData['mime'];
         $this->width = $imageData[0];
         $this->height = $imageData[1];
-        $this->mimeType = $this->mimeType === '' ?: $imageData['mime'];
     }
 
     protected function scaleType(): void
     {
         $this->scale = $this->width > $this->height ? 'landscape' : 'portrait';
+    }
+
+    protected function mimeType()
+    {
+        if(($mime = exif_imagetype($this->tmpPath)) !== false) {
+            $this->mimeType = image_type_to_mime_type($mime);
+        }
     }
 }

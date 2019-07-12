@@ -9,6 +9,7 @@
 namespace backend\behaviors;
 
 use blog\fileManager\entities\DraftFilesSession;
+use Exception;
 use yii\base\Behavior;
 use yii\db\ActiveRecord;
 
@@ -50,11 +51,17 @@ class SaveDraftImagesBehavior extends Behavior
     public function moveDraftImages($owner): void
     {
         $model = $owner->sender;
-        $this->copyContent();
-        $this->copyContent();
-        $this->copyOriginal();
-        $this->copyPost();
-        $model->{$this->contentAttribute} = $this->replaceContent($model->{$this->contentAttribute});
+
+        try {
+            $this->copyContent();
+            $this->copyOriginal();
+            $this->copyPost();
+            $model->{$this->contentAttribute} = $this->replaceContent($model->{$this->contentAttribute});
+        } catch (Exception $e) {
+            $this->draftFilesSession->flushCache();
+            print $e->getMessage();
+            exit;
+        }
 
         $this->draftFilesSession->flushCache();
     }
@@ -86,7 +93,10 @@ class SaveDraftImagesBehavior extends Behavior
     public function copy(array $files)
     {
         foreach ($files as $from => $to) {
-            copy($from, $to);
+
+            if (copy($from, $to)) {
+                unlink($from);
+            }
         }
     }
 }

@@ -29,12 +29,13 @@ class ImagickSetUp
          */
         $strip;
 
-    public function __construct(string $format, Dimension $dimension, Quality $quality, bool $strip)
+    public function __construct(string $format, Dimension $dimension, Quality $quality, Coords $coords, bool $strip)
     {
         $this->format = $format;
         $this->dimension = $dimension;
         $this->quality = $quality;
         $this->strip = $strip;
+        $this->coords = $coords;
     }
 
     public function setDimension(Dimension $dimension)

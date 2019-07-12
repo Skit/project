@@ -176,7 +176,7 @@ class PostsController extends Controller
                 return ['error' => $model->getFirstError('file')];
             }
 
-            /* @var Path $result */
+            /* @var Path []$paths */
             $paths = $this->ImageManager->imperaviResize(
                 new Image($file->name, $file->tempName, $file->size, $file->type),
                 Yii::$app->params['resizer']['patterns']['imperavi'],
@@ -184,8 +184,8 @@ class PostsController extends Controller
             );
 
             return [
-                'filelink' => $paths->getDraftSave()->getSiteUrl(),
-                'filename' => $paths->getSave()->fileName(),
+                'filelink' => $paths['saveDraft']->getUrl(),
+                'filename' => $paths['save']->getFileName(),
             ];
         }
 
