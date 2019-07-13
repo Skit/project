@@ -3,6 +3,8 @@
 
 namespace blog\fileManager\managers;
 
+use blog\fileManager\entities\Coords;
+use blog\fileManager\entities\Dimension;
 use blog\fileManager\entities\formats\ImagickAbstract;
 use blog\fileManager\entities\formats\ImagickFormat;
 use blog\fileManager\entities\ImagickResult;
@@ -49,7 +51,7 @@ class ImagickManager
      */
     public function init(ImagickSetUp $imagickSetUp, Image $image)
     {
-        $this->setUp = $imagickSetUp;
+        $this->setUp = clone $imagickSetUp;
         $this->image = $image;
         $this->formatObject->determine($image->extension);
 
@@ -110,9 +112,21 @@ class ImagickManager
     public function crop(): self
     {
         $this->format->crop($this->setUp->dimension->width, $this->setUp->dimension->height,
-            -$this->setUp->coords->left, -$this->setUp->coords->top);
+            $this->setUp->coords->left, $this->setUp->coords->top);
         $this->_setNewSize();
 
+        return $this;
+    }
+
+    public function setDimension(Dimension $dimension)
+    {
+        $this->setUp->setDimension($dimension);
+        return $this;
+    }
+
+    public function setCoords(Coords $coords)
+    {
+        $this->setUp->setCoords($coords);
         return $this;
     }
 

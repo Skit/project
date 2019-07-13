@@ -5,7 +5,6 @@ namespace backend\modules\resizer\controllers;
 use backend\modules\resizer\forms\ImageForm;
 use blog\fileManager\entities\Coords;
 use blog\fileManager\entities\Dimension;
-use blog\fileManager\entities\ImagickSetUp;
 use blog\fileManager\ImageManager;
 use blog\fileManager\source\Image;
 use Yii;
@@ -61,15 +60,12 @@ class ResizeController extends Controller
         // FIXME BLOG-15
         $formDataHack = [$form->formName() => $this->request->post()];
         if ($this->request->isAjax && $form->load($formDataHack) && $form->validate()) {
-            /* @var ImagickSetUp $setUp*/
-            $setUp = Yii::$app->params['resizer']['patterns']['post'];
-            $newSetup = clone $setUp;
-            $newSetup->setDimension(new Dimension($form->canvasData->width, $form->canvasData->height));
-            $newSetup->setCoords(new Coords($form->canvasData->left, $form->canvasData->top));
 
             return $this->imageManager->postImageResize(
                 new Image($form->fileName, $form->image->tempName, $form->image->size, ''),
-                $newSetup,
+                Yii::$app->params['resizer']['patterns']['post'],
+                new Dimension($form->canvasData->width, $form->canvasData->height),
+                new Coords(-$form->canvasData->left, -$form->canvasData->top),
                 Yii::$app->params['resizer']['paths']
             );
         }

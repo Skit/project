@@ -32,7 +32,7 @@ if ($model->is_highlight) {
             'id',
             'title',
             'slug',
-            'image_url:url',
+            'image_url:image',
             'video_url:url',
             'content:html',
             'preview:ntext',

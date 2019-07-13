@@ -4,6 +4,8 @@
 namespace blog\fileManager;
 
 
+use blog\fileManager\entities\Coords;
+use blog\fileManager\entities\Dimension;
 use blog\fileManager\entities\DraftFilesSession;
 use blog\fileManager\entities\ImagickSetUp;
 use blog\fileManager\entities\Path;
@@ -103,13 +105,16 @@ class ImageManager
      * @throws \yii\base\Exception
      * @throws \yii\db\Exception
      */
-    public function postImageResize(Image $image, ImagickSetUp $imagickSetUp, array $paths)
+    public function postImageResize(Image $image, ImagickSetUp $imagickSetUp,
+                                    Dimension $canvasDimension, Coords $canvasCoord, array $paths)
     {
         try {
             $resizer = $this->imagickManager
                 ->init($imagickSetUp, $image)
-                ->crop()
-                ->resize();
+                ->setDimension($canvasDimension)
+                ->resize()
+                ->setDimension($imagickSetUp->dimension)->setCoords($canvasCoord)
+                ->crop();
 
             $paths['saveDraft']->replacer(['{format}' => $image->extension]);
             $paths['save']->replacer([

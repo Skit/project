@@ -29,6 +29,14 @@ class ImagickSetUp
          */
         $strip;
 
+    /**
+     * ImagickSetUp constructor.
+     * @param string $format
+     * @param Dimension $dimension
+     * @param Quality $quality
+     * @param Coords $coords
+     * @param bool $strip
+     */
     public function __construct(string $format, Dimension $dimension, Quality $quality, Coords $coords, bool $strip)
     {
         $this->format = $format;
