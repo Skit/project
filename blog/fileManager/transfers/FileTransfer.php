@@ -25,4 +25,17 @@ class FileTransfer
             throw new DomainException("Fail copy from \"{$from}\" to \"{$to}\"");
         }
     }
+
+    public function delete(string $path, bool $notExistException = false)
+    {
+        if (file_exists($path)) {
+
+            if(! unlink($path)) {
+                throw new DomainException("Fail to delete: \"{$path}\"");
+            }
+        } elseif ($notExistException) {
+            throw new DomainException("Fail does not exist: \"{$path}\"");
+        }
+
+    }
 }

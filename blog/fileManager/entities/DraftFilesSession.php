@@ -46,17 +46,17 @@ class DraftFilesSession
 
     public function setContentCopy(string $draft, string $target)
     {
-        $this->sessionRestore($this->copyContentKey, [$draft => $target]);
+        $this->push($this->copyContentKey, [$draft => $target]);
     }
 
     public function setContentReplace(string $draft, string $target)
     {
-        $this->sessionRestore($this->replaceContentKey, [$draft => $target]);
+        $this->push($this->replaceContentKey, [$draft => $target]);
     }
 
     public function setOriginalCopy(string $draft, string $target)
     {
-        $this->sessionRestore($this->copyOriginalKey, [$draft => $target]);
+        $this->push($this->copyOriginalKey, [$draft => $target]);
     }
 
     public function setPostCopy(string $draft, string $target)
@@ -64,17 +64,32 @@ class DraftFilesSession
         $this->session->set($this->postKey, [$draft => $target]);
     }
 
-    private function sessionRestore(string $key, $data)
+    public function push(string $key, array $data)
     {
         $oldData = $this->session->get($key) ?? [];
         $this->session->set($key, array_merge($data, $oldData));
     }
 
+    public function add(string $key, $data)
+    {
+        $this->session->set($key, $data);
+    }
+
+    public function get(string $key)
+    {
+        return $this->session->get($key);
+    }
+
     public function flushCache()
     {
-        $this->session->set($this->postKey, null);
-        $this->session->set($this->copyOriginalKey, null);
-        $this->session->set($this->copyContentKey, null);
-        $this->session->set($this->replaceContentKey, null);
+        $this->flush($this->postKey);
+        $this->flush($this->copyOriginalKey);
+        $this->flush($this->copyContentKey);
+        $this->flush($this->replaceContentKey);
+    }
+
+    public function flush(string $key)
+    {
+        $this->session->set($key, null);
     }
 }

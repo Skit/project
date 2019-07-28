@@ -2,7 +2,6 @@
 
 namespace backend\forms;
 
-use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use backend\models\Posts;
@@ -47,6 +46,7 @@ class PostsSearch extends Posts
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => ['defaultOrder' => ['id' => SORT_DESC]]
         ]);
 
         $this->load($params);

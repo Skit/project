@@ -2,6 +2,7 @@
 
 namespace backend\models;
 
+use backend\behaviors\DeleteImageRemovedFromPost;
 use backend\behaviors\ImperaviBugFixBehavior;
 use backend\behaviors\MetaTagsBehavior;
 use backend\behaviors\PostTagsBehavior;
@@ -138,8 +139,17 @@ class Posts extends ActiveRecord
             ImperaviBugFixBehavior::class,
             MetaTagsBehavior::class,
             PostTagsBehavior::class,
+            DeleteImageRemovedFromPost::class,
         ];
     }
+
+   /*TODO запостить метод imgToEncode64
+   public function afterFind()
+    {
+        $i = new \Imagick($this->image_url);
+        $this->image_url = 'data:image/jpeg;base64,' . base64_encode($i->getImageBlob());
+        parent::afterFind();
+    }*/
 
     /**
      * @param bool $insert

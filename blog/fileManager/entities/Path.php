@@ -44,6 +44,12 @@ class Path {
         return  Yii::$app->params['baseUrl'] . "/{$this->getReplaced()}";
     }
 
+    public function toRelative(): self
+    {
+        $this->clearPart(Yii::$app->params['baseUrl']);
+        return  $this;
+    }
+
     public function convertAlias(): self
     {
         $this->_result = Yii::getAlias($this->_result);
@@ -63,6 +69,16 @@ class Path {
     public function concat(string $path, string $place = '^'): self
     {
         $this->_result = $place === '^' ? "{$path}/{$this->_result}" : "{$this->_result}/{$path}";
+        return $this;
+    }
+
+    /**
+     * @param string $part
+     * @return $this
+     */
+    public function clearPart(string $part)
+    {
+        $this->_result = str_replace($part, '', $this->_result);
         return $this;
     }
 

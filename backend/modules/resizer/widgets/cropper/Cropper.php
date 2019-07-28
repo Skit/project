@@ -98,6 +98,7 @@ class Cropper extends InputWidget
             'autoCropArea' => 1,
             'autoCrop' => false,
             'cropBoxResizable' => false,
+            'checkCrossOrigin' => false,
             'toggleDragModeOnDblclick' => false,
         ],
         /**
@@ -177,11 +178,14 @@ class Cropper extends InputWidget
     protected function getFields(): string
     {
         $result = Html::activeHiddenInput($this->model, $this->attribute, $this->options)
+                . Html::label('Cropper on ' . Html::checkbox('cropperOn', false, ['id' => 'cropperOn']), null,
+                ['style' => 'float: left;margin-right: 10px'])
                 . Html::fileInput($this->fileAttribute, null,
                     ['id' => $this->fileInputId, 'accept' => $this->acceptExtensions]);
 
+
         $result .= Html::beginTag('div', ['class'=> $this->canvasClass])
-                    . Html::img(null, ['id' => $this->imageId, 'style'=>'display:none'])
+                    . Html::img($this->model->{$this->attribute}, ['id' => $this->imageId, 'style'=>'display:none'])
                 . Html::endTag('div');
 
         $result .= Html::beginTag('div', ['class'=>$this->cropperButtonsClass])
@@ -354,7 +358,7 @@ class Cropper extends InputWidget
         }
 
         $script .="
-        if (\$image.cropper('getCroppedCanvas') === null){
+        if (\$image.cropper('getCroppedCanvas') === null || $('#cropperOn:checked').length === 0){
             \$this.removeClass(removeClass)
             \$this.submit();
         }
