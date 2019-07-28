@@ -358,7 +358,8 @@ class Cropper extends InputWidget
         }
 
         $script .="
-        if (\$image.cropper('getCroppedCanvas') === null || $('#cropperOn:checked').length === 0){
+        if (\$image.cropper('getCroppedCanvas') === null || $('#cropperOn:checked').length > 0 
+        || $(\"input[aria-invalid=true\").length) {
             \$this.removeClass(removeClass)
             \$this.submit();
         }
